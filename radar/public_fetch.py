@@ -116,9 +116,9 @@ def clear_robots_cache():
         _robots_cache.clear()
 
 
-def _robots_allowed(url, deadline):
+def _robots_allowed(url, deadline, same_origin=False):
     parsed, _ = validate_url(url)
-    key = (parsed.scheme.lower(), parsed.netloc.lower())
+    key = (parsed.scheme.lower(), parsed.netloc.lower(), same_origin)
     with _robots_lock:
         cached = _robots_cache.get(key)
         if not cached or cached[0] <= time.monotonic():
@@ -134,6 +134,8 @@ def _robots_allowed(url, deadline):
                 if response['status'] not in {301,302,303,307,308}:break
                 if not response.get('location'):raise FetchError('robots_or_robots_unavailable:invalid_redirect')
                 target=urljoin(target,response['location'])
+                if same_origin and urlsplit(target)[:2] != parsed[:2]:
+                    raise FetchError('off_origin_robots_redirect')
             else:raise FetchError('robots_or_robots_unavailable:redirect_limit')
             if response['status'] in {404, 410}:
                 rules = None
@@ -167,7 +169,7 @@ def robots_allowed(url):
         return False
 
 
-def fetch(url, max_bytes=3_000_000, timeout=12, *, form=None):
+def fetch(url, max_bytes=3_000_000, timeout=12, *, form=None, same_origin=False):
     original = url
     method = "POST" if form is not None else "GET"
     deadline = time.monotonic() + timeout
@@ -179,12 +181,12 @@ def fetch(url, max_bytes=3_000_000, timeout=12, *, form=None):
         # Do not request either robots or content for a non-public target.
         validate_url(url)
         try:
-            allowed = _robots_allowed(url, deadline)
+            allowed = _robots_allowed(url, deadline, same_origin)
         except (httpx.HTTPError, OSError) as exc:
             raise FetchError('robots_or_robots_unavailable') from exc
         if not allowed:
             raise FetchError('robots_or_robots_unavailable:disallow')
-        parsed=urlsplit(url);cached=_robots_cache.get((parsed.scheme.lower(),parsed.netloc.lower()))
+        parsed=urlsplit(url);cached=_robots_cache.get((parsed.scheme.lower(),parsed.netloc.lower(),same_origin))
         if cached:robots_chains.append(cached[2])
         response = (_request_once(url, max_bytes, deadline, method=method, data=form)
                     if method == "POST" else _request_once(url, max_bytes, deadline))
@@ -194,6 +196,8 @@ def fetch(url, max_bytes=3_000_000, timeout=12, *, form=None):
             if response['status'] in {301, 302, 303}:
                 method, form = 'GET', None
             target = urljoin(url, response['location'])
+            if same_origin and urlsplit(target)[:2] != parsed[:2]:
+                raise FetchError('off_origin_redirect')
             redirects.append({'url':url,'status':response['status'],'target':target})
             if method == 'POST' and urlsplit(target).netloc != urlsplit(url).netloc:
                 raise FetchError('cross_host_post_redirect')

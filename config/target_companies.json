@@ -1,0 +1,192 @@
+{
+  "label": "研究示例，未经营业选定",
+  "companies": [
+    {
+      "id": "otsuka",
+      "name": "大塚製薬株式会社",
+      "aliases": [
+        "大塚製薬"
+      ],
+      "website": "https://www.otsuka.co.jp/",
+      "checked_on": "2026-11-20",
+      "mapping_url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html",
+      "relations": [
+        {
+          "name": "天津大塚飲料有限公司",
+          "place": "天津",
+          "status": "verified",
+          "basis": "子会社",
+          "url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html"
+        }
+      ],
+      "access": "hold",
+      "terms_url": "https://www.otsuka.co.jp/terms-of-use/",
+      "terms_note": "非营利私人使用以外的复制受限；仅登记原发链接。",
+      "entries": [
+        {
+          "kind": "list",
+          "role": "news",
+          "url": "https://www.otsuka.co.jp/company/newsreleases/"
+        },
+        {
+          "kind": "rss",
+          "role": "rss",
+          "url": "https://www.otsuka.co.jp/company/newsreleases/release.xml"
+        },
+        {
+          "kind": "detail",
+          "role": "historical_reference",
+          "url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html"
+        }
+      ]
+    },
+    {
+      "id": "nishikawa",
+      "name": "西川ゴム工業株式会社",
+      "aliases": [],
+      "website": "https://www.nishikawa-rbr.co.jp/",
+      "checked_on": "2026-11-20",
+      "mapping_url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf",
+      "relations": [
+        {
+          "name": "湖北西川密封系統有限公司",
+          "place": "湖北省孝感市",
+          "status": "verified",
+          "basis": "发行人披露的中国生产据点，未披露持股比例",
+          "url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf"
+        }
+      ],
+      "access": "reviewed",
+      "terms_url": "https://www.nishikawa-rbr.co.jp/sitemap.html",
+      "terms_note": "官网新闻与站点地图可见，未见针对这些公开新闻的自动读取禁令；只读取同源公告，原件仅保存在本机。",
+      "entries": [
+        {
+          "kind": "list",
+          "role": "news",
+          "url": "https://www.nishikawa-rbr.co.jp/news/"
+        },
+        {
+          "kind": "list",
+          "role": "ir",
+          "url": "https://www.nishikawa-rbr.co.jp/news/ir/"
+        },
+        {
+          "kind": "pdf",
+          "role": "historical_reference",
+          "url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf"
+        }
+      ]
+    },
+    {
+      "id": "shibaura",
+      "name": "芝浦機械株式会社",
+      "aliases": [],
+      "website": "https://www.shibaura-machine.co.jp/",
+      "checked_on": "2026-11-20",
+      "mapping_url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html",
+      "relations": [
+        {
+          "name": "芝机精密机械（安徽）有限公司",
+          "place": "安徽省",
+          "status": "verified",
+          "basis": "新設した製造現地法人",
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html"
+        }
+      ],
+      "access": "reviewed",
+      "terms_url": "https://www.shibaura-machine.co.jp/jp/riyo/",
+      "terms_note": "已查官网使用条件，按站点 robots 逐次核验，仅供本地研究。",
+      "entries": [
+        {
+          "kind": "list",
+          "role": "news",
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/"
+        },
+        {
+          "kind": "list",
+          "role": "ir",
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/ir/"
+        },
+        {
+          "kind": "detail",
+          "role": "historical_reference",
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html"
+        }
+      ]
+    },
+    {
+      "id": "oval",
+      "name": "株式会社オーバル",
+      "aliases": [],
+      "website": "https://www.oval.co.jp/",
+      "checked_on": "2026-11-20",
+      "mapping_url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf",
+      "relations": [
+        {
+          "name": "合肥オーバル儀表有限公司",
+          "place": "合肥",
+          "status": "verified",
+          "basis": "連結子会社",
+          "url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf"
+        }
+      ],
+      "access": "hold",
+      "terms_url": "https://www.oval.co.jp/attention/",
+      "terms_note": "复制利用附有联系与授权条件，试点仅留链接。",
+      "entries": [
+        {
+          "kind": "list",
+          "role": "news",
+          "url": "https://www.oval.co.jp/topics/"
+        },
+        {
+          "kind": "list",
+          "role": "ir",
+          "url": "https://www.oval.co.jp/ir/news/"
+        },
+        {
+          "kind": "pdf",
+          "role": "historical_reference",
+          "url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "sumibe",
+      "name": "住友ベークライト株式会社",
+      "aliases": [],
+      "website": "https://www.sumibe.co.jp/",
+      "checked_on": "2026-11-20",
+      "mapping_url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html",
+      "relations": [
+        {
+          "name": "蘇州住友電木有限公司",
+          "place": "苏州",
+          "status": "verified",
+          "basis": "中国グループ会社；未披露直接持股比例",
+          "url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html"
+        }
+      ],
+      "access": "hold",
+      "terms_url": "https://www.sumibe.co.jp/site-policy/",
+      "terms_note": "预先同意范围待确认，试点暂停整篇归档。",
+      "entries": [
+        {
+          "kind": "list",
+          "role": "news",
+          "url": "https://www.sumibe.co.jp/topics/"
+        },
+        {
+          "kind": "list",
+          "role": "ir",
+          "url": "https://www.sumibe.co.jp/ir/index.html"
+        },
+        {
+          "kind": "detail",
+          "role": "historical_reference",
+          "url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html"
+        }
+      ]
+    }
+  ]
+}

@@ -32,3 +32,7 @@ uv run python manage.py check
 ## 许可证
 
 [MIT](LICENSE)
+
+## 目标日企名单试点
+
+用 `python manage.py target_watch` 查看研究示例。指定企业并显式启用联网后，可把原文、事件及失败记录保存到独立目录。参见[命令、名单与验收结果](docs/TARGET_COMPANY_PILOT.md)。
