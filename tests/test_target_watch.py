@@ -1,15 +1,13 @@
 """Synthetic companies and documents throughout; no network, database, or model required."""
 import copy
-import hashlib
 import json
 from datetime import date
-from pathlib import Path
 
 from django.conf import settings
 from django.core.management import call_command, CommandError
 import pytest
 
-from collectors import target_watch as watch
+from collectors import target_watch as watch, target_batch as batch
 from collectors import target_events as events
 from radar import public_fetch
 
@@ -100,7 +98,7 @@ def test_link_duplicates_versions_and_manual_fields():
 def test_rss_scope_and_unsupported_query():
     feed = ('<rss><channel><item><title>蘇州工場を増設</title><link>'+ROOT+'a</link></item>'
             '<item><title>上海工場を増設</title><link>https://another.example/x</link></item></channel></rss>')
-    assert watch.discover({'url':ROOT+'rss','body':feed.encode()},'rss')==[(ROOT+'a','蘇州工場を増設 ')]
+    assert watch.discover({'url':ROOT+'rss','body':feed.encode()},'rss')==[{'url':ROOT+'a','title':'蘇州工場を増設','published_date':''}]
     with pytest.raises(CommandError, match='不支持 query'):
         call_command('target_watch',query='上海',online=True)
     with pytest.raises(ValueError,match='access_restricted'):
@@ -140,21 +138,22 @@ def test_cross_origin_stop_before_fetch(monkeypatch,redirect_from):
 def test_manual_batch_replay_and_failures(tmp_path, monkeypatch):
     entries = [C['entries'][0],{'kind':'pdf','role':'ir','url':ROOT+'bad.pdf'}]
     company = dict(C,entries=entries)
-    def read(url,*,directory,**opts):
+    def read(url,**opts):
         assert opts['same_origin']
         if url.endswith('bad.pdf'):
             raise ValueError('http_403')
         body = b'<a href="release">China</a>' if url.endswith('news') else source()
         if url.endswith('news'):
             body = '<a href="release">上海工場の増設</a>'.encode()
-        sha = hashlib.sha256(body).hexdigest()
-        raw = directory/(sha+'.html')
-        raw.write_bytes(body)
-        return {'body':body,'content_type':'text/html','url':url},{'url':url,'sha256':sha,'raw_path':raw.name}
-    monkeypatch.setattr(watch,'read_original',read)
+        return {'body':body,'content_type':'text/html','url':url}
+    monkeypatch.setattr(batch,'fetch',read)
+    cfg=tmp_path/'config.json'
+    company['entries'][1]['title']='上海工場の増設'
+    cfg.write_text(json.dumps({'companies':[company]}),encoding='utf-8')
+    companies=watch.load_targets(cfg)
     out = tmp_path/'pilot'
     for i in range(2):
-        report=watch.run([company],out,limit=12,details=2)
+        report=batch.run(companies,out,limit=12,details=2,mode='baseline')
         assert report['stats']['new_events']==1-i and report['stats']['duplicates']==i
         assert report['stats']['failures']==1 and report['reads'][-1]['reason']=='http_403'
     assert len(json.loads((out/'target-events.json').read_text())['events'])==1
@@ -188,9 +187,11 @@ def test_unconfirmed_relationship_and_undated_disclosure():
 
 
 def test_terms_hold_no_fetch_and_output_guard(tmp_path,monkeypatch,settings):
-    monkeypatch.setattr(watch,'read_original',lambda *a,**k: pytest.fail('unexpected network'))
-    report=watch.run([dict(C,access='hold')], tmp_path/'isolated', limit=4, details=1)
-    assert report['stats']['terms_holds']==1 and report['stats']['requests']==0
+    monkeypatch.setattr(batch,'fetch',lambda *a,**k: pytest.fail('unexpected network'))
+    cfg=tmp_path/'config.json'
+    cfg.write_text(json.dumps({'companies':[dict(C,access='hold')]}),encoding='utf-8')
+    report=batch.run(watch.load_targets(cfg), tmp_path/'isolated', limit=4, details=1)
+    assert report['stats']['manual_watch']==1 and report['stats']['requests']==0
     settings.DATA_DIR=tmp_path/'business'
     with pytest.raises(CommandError,match='业务数据目录以外'):
         call_command('target_watch',online=True,output=settings.DATA_DIR/'raw')
@@ -198,5 +199,5 @@ def test_terms_hold_no_fetch_and_output_guard(tmp_path,monkeypatch,settings):
     protected.mkdir()
     (protected/'file').write_text('keep')
     with pytest.raises(ValueError, match='空目录'):
-        watch.run([C],protected,limit=1,details=1)
+        batch.run([C],protected,limit=1,details=1)
     assert (protected/'file').read_text()=='keep'

@@ -5,7 +5,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from filelock import Timeout
 
-from collectors.target_watch import load_targets, run
+from collectors.target_watch import load_targets
+from collectors.target_batch import run
 
 
 class Command(BaseCommand):
@@ -18,8 +19,11 @@ class Command(BaseCommand):
         parser.add_argument('--output', type=Path, help='独立试点目录')
         parser.add_argument('--online', action='store_true')
         parser.add_argument('--include-references', action='store_true', help='同时核读配置中的历史公告')
-        parser.add_argument('--max-requests', type=int, default=12, help='含 robots 与跳转，1–60')
-        parser.add_argument('--details-per-entry', type=int, default=2, help='每个列表或订阅源读取 1–5 篇')
+        parser.add_argument('--max-requests', type=int, default=12, help='含 robots 与跳转，1–300')
+        parser.add_argument('--max-details-per-company','--details-per-entry', type=int, default=3,help='每家公司每批最多读取的详情数量')
+        parser.add_argument('--mode',choices=['baseline','incremental'],default='incremental')
+        parser.add_argument('--edinet-days',type=int,default=7)
+        parser.add_argument('--resume',action='store_true',help='从相同名单与日期的中断批次继续')
         parser.add_argument('--query', help='本试点没有搜索入口；提供此参数会报告不支持')
 
     def handle(self, **opts):
@@ -37,9 +41,9 @@ class Command(BaseCommand):
             output = opts['output']
             if not output or output.resolve().is_relative_to(settings.DATA_DIR.resolve()):
                 raise ValueError('请用 --output 指定业务数据目录以外的独立目录')
-            if not 1 <= opts['max_requests'] <= 60 or not 1 <= opts['details_per_entry'] <= 5:
-                raise ValueError('请求预算须在 1–60，每个入口详情上限须在 1–5')
-            report = run(targets, output, limit=opts['max_requests'], details=opts['details_per_entry'],
+            if not 1 <= opts['max_requests'] <= 300 or not 1 <= opts['max_details_per_company'] <= 30 or not 1 <= opts['edinet_days'] <= 365:
+                raise ValueError('请求预算须在 1–300，单企详情上限 1–30，回看天数 1–365')
+            report = run(targets, output, limit=opts['max_requests'], details=opts['max_details_per_company'],mode=opts['mode'],edinet_days=opts['edinet_days'],resume=opts['resume'],
                          references=opts['include_references'], configured=len(companies))
         except (ValueError, OSError, KeyError, TypeError, Timeout) as exc:
             raise CommandError(str(exc)) from exc

@@ -11,6 +11,7 @@ import os
 import re
 from pathlib import Path
 import sys
+import time
 
 from .sources import SOURCES
 
@@ -32,7 +33,14 @@ def atomic_json(path: Path, payload: dict) -> None:
             json.dump(payload, file, ensure_ascii=False, indent=2)
             file.flush()
             os.fsync(file.fileno())
-        os.replace(temporary, path)
+        for attempt in range(4):
+            try:
+                os.replace(temporary, path)
+                break
+            except PermissionError:
+                if attempt == 3:
+                    raise
+                time.sleep(0.05 * (attempt + 1))
     finally:
         temporary.unlink(missing_ok=True)
 

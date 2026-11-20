@@ -8,12 +8,17 @@ from radar.public_fetch import fetch
 def read_original(url,*,max_bytes=3_000_000,timeout=25,probe=False,directory=None,same_origin=False):
     directory = settings.DATA_DIR if directory is None else directory
     options = {'same_origin': True} if same_origin else {}
-    result=fetch(url,max_bytes=max_bytes,timeout=timeout,**options);body=result['body']
+    result=fetch(url,max_bytes=max_bytes,timeout=timeout,**options)
+    return result, archive_original(result, directory, probe)
+
+
+def archive_original(result,directory,probe=False):
+    body=result['body']
     digest=hashlib.sha256(body).hexdigest()
     ext='pdf' if body.startswith(b'%PDF-') else ('xlsx' if body.startswith(b'PK\x03\x04') else 'html')
     path=directory/'raw'/('probe_cache' if probe else 'research')/f'{digest}.{ext}';path.parent.mkdir(parents=True,exist_ok=True)
     if not path.exists():path.write_bytes(body)
-    return result,{'url':result['url'],'sha256':digest,'raw_path':path.relative_to(directory).as_posix(),
+    return {'url':result['url'],'sha256':digest,'raw_path':path.relative_to(directory).as_posix(),
        'redirect_chain':result.get('redirect_chain',[]),'robots_redirect_chains':result.get('robots_redirect_chains',[])}
 
 

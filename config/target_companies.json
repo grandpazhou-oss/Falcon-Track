@@ -2,8 +2,6 @@
   "label": "研究示例，未经营业选定",
   "companies": [
     {
-      "id": "otsuka",
-      "name": "大塚製薬株式会社",
       "aliases": [
         "大塚製薬"
       ],
@@ -19,30 +17,60 @@
           "url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html"
         }
       ],
-      "access": "hold",
       "terms_url": "https://www.otsuka.co.jp/terms-of-use/",
       "terms_note": "非营利私人使用以外的复制受限；仅登记原发链接。",
       "entries": [
         {
-          "kind": "list",
           "role": "news",
-          "url": "https://www.otsuka.co.jp/company/newsreleases/"
+          "url": "https://www.otsuka.co.jp/company/newsreleases/",
+          "source_type": "list",
+          "entry_id": "news",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "非营利私人使用以外的复制受限；仅登记原发链接。"
         },
         {
-          "kind": "rss",
           "role": "rss",
-          "url": "https://www.otsuka.co.jp/company/newsreleases/release.xml"
+          "url": "https://www.otsuka.co.jp/company/newsreleases/release.xml",
+          "source_type": "rss",
+          "entry_id": "rss",
+          "compliance_mode": "metadata_pointer",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "仅内存处理订阅或目录标题与原址；不读取报道或存档正文。"
         },
         {
-          "kind": "detail",
           "role": "historical_reference",
-          "url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html"
+          "url": "https://www.otsuka.co.jp/company/newsreleases/2026/20260205_1.html",
+          "source_type": "detail",
+          "entry_id": "historical_reference",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "非营利私人使用以外的复制受限；仅登记原发链接。"
+        },
+        {
+          "entry_id": "edinet",
+          "source_type": "edinet",
+          "role": "filings",
+          "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
+          "compliance_mode": "statutory_api",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "金融厅 EDINET v2 官方接口，限选定法人和法定文种。"
         }
-      ]
+      ],
+      "company_id": "otsuka",
+      "name_ja": "大塚製薬株式会社",
+      "name_zh": "大塚制药",
+      "industry": "医药",
+      "owner_sales": null,
+      "edinet_code": "E00956",
+      "parent_edinet_code": "E21183",
+      "china_entities": [
+        "天津大塚飲料有限公司"
+      ],
+      "edinet_code_source": "https://www.fsa.go.jp/search/20080304-1/01.htm",
+      "parent_code_source": "https://info.gbiz.go.jp/hojin/edinetDownload?docId=S100XUA7"
     },
     {
-      "id": "nishikawa",
-      "name": "西川ゴム工業株式会社",
       "aliases": [],
       "website": "https://www.nishikawa-rbr.co.jp/",
       "checked_on": "2026-11-20",
@@ -56,30 +84,64 @@
           "url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf"
         }
       ],
-      "access": "reviewed",
       "terms_url": "https://www.nishikawa-rbr.co.jp/sitemap.html",
       "terms_note": "官网新闻与站点地图可见，未见针对这些公开新闻的自动读取禁令；只读取同源公告，原件仅保存在本机。",
       "entries": [
         {
-          "kind": "list",
           "role": "news",
-          "url": "https://www.nishikawa-rbr.co.jp/news/"
+          "url": "https://www.nishikawa-rbr.co.jp/news/",
+          "source_type": "list",
+          "entry_id": "news",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "官网新闻与站点地图可见，未见针对这些公开新闻的自动读取禁令；只读取同源公告，原件仅保存在本机。",
+          "links_xpath": "//div[@class=\"p-news__list\"]//a[@href]",
+          "title_xpath": ".//p[contains(@class,\"item-heading\")]"
         },
         {
-          "kind": "list",
           "role": "ir",
-          "url": "https://www.nishikawa-rbr.co.jp/news/ir/"
+          "url": "https://www.nishikawa-rbr.co.jp/news/ir/",
+          "source_type": "list",
+          "entry_id": "ir",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "官网新闻与站点地图可见，未见针对这些公开新闻的自动读取禁令；只读取同源公告，原件仅保存在本机。",
+          "links_xpath": "//div[@class=\"p-news__list\"]//a[@href]",
+          "title_xpath": ".//p[contains(@class,\"item-heading\")]"
         },
         {
-          "kind": "pdf",
           "role": "historical_reference",
-          "url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf"
+          "url": "https://www.nishikawa-rbr.co.jp/upfile/20250917news%20.pdf",
+          "source_type": "pdf",
+          "entry_id": "historical_reference",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "官网新闻与站点地图可见，未见针对这些公开新闻的自动读取禁令；只读取同源公告，原件仅保存在本机。",
+          "title": "湖北省にて中国第４工場新設のお知らせ"
+        },
+        {
+          "entry_id": "edinet",
+          "source_type": "edinet",
+          "role": "filings",
+          "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
+          "compliance_mode": "statutory_api",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "金融厅 EDINET v2 官方接口，限选定法人和法定文种。"
         }
-      ]
+      ],
+      "company_id": "nishikawa",
+      "name_ja": "西川ゴム工業株式会社",
+      "name_zh": "西川橡胶工业",
+      "industry": "汽车零部件",
+      "owner_sales": null,
+      "edinet_code": "E01112",
+      "parent_edinet_code": null,
+      "china_entities": [
+        "湖北西川密封系統有限公司"
+      ],
+      "edinet_code_source": "https://info.gbiz.go.jp/hojin/edinetDownload?docId=S100W8Z8"
     },
     {
-      "id": "shibaura",
-      "name": "芝浦機械株式会社",
       "aliases": [],
       "website": "https://www.shibaura-machine.co.jp/",
       "checked_on": "2026-11-20",
@@ -93,30 +155,62 @@
           "url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html"
         }
       ],
-      "access": "reviewed",
       "terms_url": "https://www.shibaura-machine.co.jp/jp/riyo/",
       "terms_note": "已查官网使用条件，按站点 robots 逐次核验，仅供本地研究。",
       "entries": [
         {
-          "kind": "list",
           "role": "news",
-          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/"
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/",
+          "source_type": "list",
+          "entry_id": "news",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "已查官网使用条件，按站点 robots 逐次核验，仅供本地研究。",
+          "links_xpath": "//dl[contains(@class,\"info_list\")]/dd//a[@href]"
         },
         {
-          "kind": "list",
           "role": "ir",
-          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/ir/"
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/ir/",
+          "source_type": "list",
+          "entry_id": "ir",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "已查官网使用条件，按站点 robots 逐次核验，仅供本地研究。",
+          "links_xpath": "//dl[contains(@class,\"info_list\")]/dd//a[@href]"
         },
         {
-          "kind": "detail",
           "role": "historical_reference",
-          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html"
+          "url": "https://www.shibaura-machine.co.jp/jp/NEWS/press/20260420.html",
+          "source_type": "detail",
+          "entry_id": "historical_reference",
+          "compliance_mode": "full_archive",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "已查官网使用条件，按站点 robots 逐次核验，仅供本地研究。",
+          "title": "中国安徽省新現地法人（製造会社）設立及び生産体制の最適化に関するお知らせ"
+        },
+        {
+          "entry_id": "edinet",
+          "source_type": "edinet",
+          "role": "filings",
+          "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
+          "compliance_mode": "statutory_api",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "金融厅 EDINET v2 官方接口，限选定法人和法定文种。"
         }
-      ]
+      ],
+      "company_id": "shibaura",
+      "name_ja": "芝浦機械株式会社",
+      "name_zh": "芝浦机械",
+      "industry": "工业设备",
+      "owner_sales": null,
+      "edinet_code": "E01482",
+      "parent_edinet_code": null,
+      "china_entities": [
+        "芝机精密机械（安徽）有限公司"
+      ],
+      "edinet_code_source": "https://fs2.magicalir.net/edinet/2025/6104/S100W00Q.pdf"
     },
     {
-      "id": "oval",
-      "name": "株式会社オーバル",
       "aliases": [],
       "website": "https://www.oval.co.jp/",
       "checked_on": "2026-11-20",
@@ -130,30 +224,69 @@
           "url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf"
         }
       ],
-      "access": "hold",
       "terms_url": "https://www.oval.co.jp/attention/",
       "terms_note": "复制利用附有联系与授权条件，试点仅留链接。",
       "entries": [
         {
-          "kind": "list",
           "role": "news",
-          "url": "https://www.oval.co.jp/topics/"
+          "url": "https://www.oval.co.jp/topics/",
+          "source_type": "list",
+          "entry_id": "news",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "复制利用附有联系与授权条件，试点仅留链接。"
         },
         {
-          "kind": "list",
           "role": "ir",
-          "url": "https://www.oval.co.jp/ir/news/"
+          "url": "https://www.oval.co.jp/ir/news/",
+          "source_type": "list",
+          "entry_id": "ir",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "复制利用附有联系与授权条件，试点仅留链接。"
         },
         {
-          "kind": "pdf",
           "role": "historical_reference",
-          "url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf"
+          "url": "https://www.oval.co.jp/fwp/wp-content/uploads/2026/04/20260428-2.pdf",
+          "source_type": "pdf",
+          "entry_id": "historical_reference",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "复制利用附有联系与授权条件，试点仅留链接。"
+        },
+        {
+          "source_type": "list",
+          "entry_id": "gbiz",
+          "role": "disclosures",
+          "url": "https://info.gbiz.go.jp/hojin/ichiran?hojinBango=4011101003936",
+          "compliance_mode": "metadata_pointer",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "经产省 gBizINFO 法人资料中公开的 EDINET 披露索引，仅限同站披露标题。",
+          "links_xpath": "//a[contains(@href,\"/edinetDownload?\")]"
+        },
+        {
+          "entry_id": "edinet",
+          "source_type": "edinet",
+          "role": "filings",
+          "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
+          "compliance_mode": "statutory_api",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "金融厅 EDINET v2 官方接口，限选定法人和法定文种。"
         }
-      ]
+      ],
+      "company_id": "oval",
+      "name_ja": "株式会社オーバル",
+      "name_zh": "奥巴尔",
+      "industry": "精密仪器",
+      "owner_sales": null,
+      "edinet_code": "E02270",
+      "parent_edinet_code": null,
+      "china_entities": [
+        "合肥オーバル儀表有限公司"
+      ],
+      "edinet_code_source": "https://info.gbiz.go.jp/hojin/edinetDownload?docId=S100YDYH"
     },
     {
-      "id": "sumibe",
-      "name": "住友ベークライト株式会社",
       "aliases": [],
       "website": "https://www.sumibe.co.jp/",
       "checked_on": "2026-11-20",
@@ -167,26 +300,59 @@
           "url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html"
         }
       ],
-      "access": "hold",
       "terms_url": "https://www.sumibe.co.jp/site-policy/",
       "terms_note": "预先同意范围待确认，试点暂停整篇归档。",
       "entries": [
         {
-          "kind": "list",
           "role": "news",
-          "url": "https://www.sumibe.co.jp/topics/"
+          "url": "https://www.sumibe.co.jp/topics/2026/index.html",
+          "source_type": "list",
+          "entry_id": "news",
+          "compliance_mode": "metadata_pointer",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "仅内存处理订阅或目录标题与原址；不读取报道或存档正文。",
+          "links_xpath": "//ul[contains(@class,\"news-list\")]//a[@href]",
+          "title_xpath": ".//span[@class='title']"
         },
         {
-          "kind": "list",
           "role": "ir",
-          "url": "https://www.sumibe.co.jp/ir/index.html"
+          "url": "https://www.sumibe.co.jp/ir/index.html",
+          "source_type": "list",
+          "entry_id": "ir",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "预先同意范围待确认，试点暂停整篇归档。"
         },
         {
-          "kind": "detail",
           "role": "historical_reference",
-          "url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html"
+          "url": "https://www.sumibe.co.jp/topics/2024/it-materials/0924_01/index.html",
+          "source_type": "detail",
+          "entry_id": "historical_reference",
+          "compliance_mode": "manual_watch",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "预先同意范围待确认，试点暂停整篇归档。"
+        },
+        {
+          "entry_id": "edinet",
+          "source_type": "edinet",
+          "role": "filings",
+          "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
+          "compliance_mode": "statutory_api",
+          "terms_reviewed_at": "2026-11-20",
+          "terms_note": "金融厅 EDINET v2 官方接口，限选定法人和法定文种。"
         }
-      ]
+      ],
+      "company_id": "sumibe",
+      "name_ja": "住友ベークライト株式会社",
+      "name_zh": "住友电木",
+      "industry": "化工材料",
+      "owner_sales": null,
+      "edinet_code": "E00819",
+      "parent_edinet_code": null,
+      "china_entities": [
+        "蘇州住友電木有限公司"
+      ],
+      "edinet_code_source": "https://www.sumibe.co.jp/ir/library/report/files/135.pdf"
     }
   ]
 }

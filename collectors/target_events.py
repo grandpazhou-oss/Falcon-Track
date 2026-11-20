@@ -194,7 +194,7 @@ def schedule(fact, blocks, relation, today):
                 break
 
 
-def candidate(company, title, blocks, published, today):
+def candidate(company, title, blocks, published, today, *, entity_site=False):
     parent_names = [company['name'], *company['aliases']]
     relations = company['relations']
     # Strict legal names or documented aliases, never fuzzy identity or location alone.
@@ -223,6 +223,11 @@ def candidate(company, title, blocks, published, today):
                 geography = geography.replace(compact(name), '')
             cities = list(dict.fromkeys(ALIASES[c] for c in CITY.findall(geography) if c != '中山' or '中山市' in geography))
             regions = re.findall(r'湖北省|安徽省|広東省|浙江省|江蘇省|中華人民共和国|中国本土|中国大陸', geography)
+            # A named operating subsidiary can identify its own facility in a filing.
+            if (entity_site and not cities and not regions and len(own)==1 and own[0]['status']=='verified'
+                    and re.search(re.escape(compact(own[0]['name']))+r'(?:の工場|において|にて|では|は|が)',text)
+                    and not re.search(r'日本|国内|名古屋|東京|大阪|米国|欧州|タイ|インド|へ移|に移',geography)):
+                regions=[own[0]['place']] if own[0]['place'] else []
             if not cities and not regions:
                 continue
             if not (own or parent or issuer_voice):

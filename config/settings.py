@@ -7,7 +7,11 @@ from urllib.parse import unquote, urlparse
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+# EDINET credentials must originate in the process environment or native keyring.
+_edinet_from_env = "EDINET_API_KEY" in os.environ
 load_dotenv(BASE_DIR / ".env", override=False)
+if not _edinet_from_env:
+    os.environ.pop("EDINET_API_KEY", None)
 DATA_DIR = Path(os.environ.get("LEAD_DATA_DIR", BASE_DIR / "data")).expanduser().resolve()
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 secret_path = DATA_DIR / ".django-secret"
