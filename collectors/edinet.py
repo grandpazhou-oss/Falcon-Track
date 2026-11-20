@@ -20,6 +20,8 @@ from collectors.research_common import pdf_pages
 from collectors.target_events import compact
 
 BASE = 'https://api.edinet-fsa.go.jp/api/v2/documents'
+SOURCE_TYPE = 'edinet_api_v2'
+ATTRIBUTION = '出典：EDINET（金融庁）'
 TYPES = {'120','160','180'}
 SECTION = re.compile(r'設備の新設[、，・,]?除却等の計画|関係会社の状況|PlannedAdditions|MajorSubsidiariesAndAssociates|OverviewOfAffiliatedEntities', re.I)
 
@@ -39,18 +41,20 @@ def api_key():
 def request(url, key, limit):
     """Reject redirects. Never hand a credential-bearing URL to HTTP loggers."""
     parsed = urlsplit(url)
-    if (parsed[:2] != ('https','api.edinet-fsa.go.jp') or
+    query = r'date=[0-9]{4}-[0-9]{2}-[0-9]{2}&type=2' if parsed.path.endswith('.json') else r'type=[25]'
+    if (not key or parsed.fragment or not re.fullmatch(query,parsed.query) or parsed[:2] != ('https','api.edinet-fsa.go.jp') or
             not re.fullmatch(r'/api/v2/documents(?:\.json|/S[A-Z0-9]{7})',parsed.path)):
         raise ValueError('invalid_edinet_endpoint')
     deadline = public_fetch.bounded_deadline(20)
     public_fetch.check_budget()
-    if not public_fetch._robots_allowed(url, deadline, same_origin=True):
-        raise ValueError('blocked_by_robots')
     _, ip = public_fetch.validate_url(url)
     try:
-        with public_fetch.public_request(timeout=max(.01,deadline-time.monotonic())):
+        with public_fetch.public_request(timeout=max(.01,deadline-time.monotonic()),min_interval=1.2):
+            if time.monotonic()>=deadline:
+                raise ValueError('edinet_timeout')
             attempt=public_fetch._consume_budget(url)
             conn = http.client.HTTPSConnection(parsed.hostname,timeout=max(.01,deadline-time.monotonic()))
+            conn.debuglevel=0  # The request target contains the subscription key.
             # Pin the vetted IP while keeping the original TLS hostname and certificate checks.
             conn._create_connection = lambda addr,*args: socket.create_connection((ip,443),*args)
             try:
@@ -82,13 +86,13 @@ def request(url, key, limit):
 
 def checked_body(body):
     # EDINET also returns HTTP 200 with an error status in a JSON envelope.
-    if body.lstrip().startswith(b'{'):
+    if body.removeprefix(b'\xef\xbb\xbf').lstrip().startswith(b'{'):
         obj=json.loads(body)
         if isinstance(obj,dict):
             meta=obj.get('metadata')
-            status=str(meta.get('status','') if isinstance(meta,dict) else obj.get('StatusCode',obj.get('statusCode','')))
-            if status in {'400','401','403','404','429','500','503'}:
-                raise ValueError('edinet_http_'+status)
+            for value in (obj.get('statusCode'),obj.get('StatusCode'),meta.get('status') if isinstance(meta,dict) else None):
+                if re.fullmatch(r'[45][0-9]{2}',str(value)):
+                    raise ValueError('edinet_http_'+str(value))
     return body
 
 
@@ -149,6 +153,23 @@ def csv_blocks(body, kind):
     return blocks
 
 
+def pdf_blocks(pages,kind):
+    blocks=[]
+    active=kind=='180'
+    for pg in pages:
+        for line in pg['text'].splitlines():
+            if kind!='180':
+                heading=compact(line)
+                if SECTION.search(heading):
+                    # Printed contents pages repeat the section names followed by dot leaders.
+                    active=not re.search(r'[.・]{3,}',heading)
+                elif re.match(r'^(?:第[0-9]+|[0-9]+【)',heading):
+                    active=False
+            if active and line.strip():
+                blocks.append((f"PDF p.{pg['page']}",line))
+    return blocks
+
+
 def report_document(row,key,output):
     docid=row['docID']
     kind=row['docTypeCode']
@@ -179,21 +200,11 @@ def report_document(row,key,output):
         blocks=csv_blocks(body,kind)
     else:
         pages=pdf_pages(rel,directory=output)['pages']
-        blocks=[]
-        active = kind=='180'
-        for pg in pages:
-            for line in pg['text'].splitlines():
-                if kind!='180':
-                    if SECTION.search(compact(line)):
-                        active=True
-                    elif re.match(r'^\s*(?:第[0-9０-９]+|[0-9０-９]+\s*【)',line):
-                        active=False
-                if active:
-                    blocks.append((f"PDF p.{pg['page']}",line))
+        blocks=pdf_blocks(pages,kind)
     stamp=row['submitDateTime'][:10]
     try:
         pub={'value':date.fromisoformat(stamp).isoformat(),'quote':row['submitDateTime'],'locator':'EDINET submitDateTime'}
     except ValueError:
         pub=None
-    doc={'url':url,'raw_path':rel,'sha256':sha,'doc_id':docid,'doc_type':kind,'edinet_code':row['edinetCode']}
+    doc={'source_attribution':ATTRIBUTION,'url':url,'raw_path':rel,'sha256':sha,'doc_id':docid,'doc_type':kind,'edinet_code':row['edinetCode']}
     return blocks,pub,doc

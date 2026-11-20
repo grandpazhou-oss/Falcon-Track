@@ -17,7 +17,7 @@ from collectors import edinet
 from collectors.cli import atomic_json
 from collectors.research_common import archive_original
 from collectors.target_events import candidate, compact, document
-from collectors.target_watch import discover, store_event
+from collectors.target_watch import discover, expanded_entries, store_event
 from collectors.title_prescore import title_prescore
 from radar.public_fetch import check_budget, fetch, request_budget
 from radar.search_provider import canonical_url
@@ -34,7 +34,7 @@ def read_json(path, default):
 
 
 def run(companies, output, *, limit, details=3, references=False, configured=None,
-        mode='incremental', edinet_days=7, resume=False):
+        mode='incremental', edinet_days=7, edinet_date=None, resume=False):
     output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     event_file=output/'target-events.json'
@@ -50,7 +50,7 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
         if state.get('format')!=2:
             raise ValueError('水位线格式不符')
         today=timezone.localdate()
-        signature=fingerprint(json.dumps([companies,mode,references,edinet_days,today.isoformat()],sort_keys=True))
+        signature=fingerprint(json.dumps([companies,mode,references,edinet_days,str(edinet_date),today.isoformat()],sort_keys=True))
         if not resume or state.get('checkpoint',{}).get('signature')!=signature:
             state['checkpoint']={'signature':signature,'indexes':[]}
         checkpoint=state['checkpoint']['indexes']
@@ -103,7 +103,7 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
 
         with request_budget(limit,min(900,limit*22+5),journal=report['http_requests']) as budget:
             for c in companies:
-                for e in c['entries']:
+                for e in expanded_entries(c['entries'],today):
                     level=e['compliance_mode']
                     row={'company_id':c['id'],'entry_id':e['entry_id'],'url':e['url'],'compliance_mode':level}
                     report['entries'].append(row)
@@ -119,6 +119,11 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                         continue
                     sources[scope]=(c,e,s,row)
                     if level=='statutory_api':
+                        if e.get('source_type')!=edinet.SOURCE_TYPE or e['url']!=edinet.BASE+'.json':
+                            row.update(status='failed',reason='invalid_edinet_source')
+                            stats['failures']+=1
+                            continue
+                        report['source_attribution']=row['source_attribution']=edinet.ATTRIBUTION
                         statutory.append(scope)
                         continue
                     if scope in checkpoint:
@@ -165,12 +170,12 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                 stats['attempted_sources']+=len(statutory)
                 for scope in statutory:
                     sources[scope][3]['status']='statutory_index'
-                for delta in range(edinet_days):
-                    day=today-timedelta(days=delta)
+                days=(edinet_date,) if edinet_date else (today-timedelta(days=d) for d in range(edinet_days))
+                for day in days:
                     label='edinet:'+day.isoformat()
                     if label in checkpoint:
                         continue
-                    daylog={'date':day.isoformat()}
+                    daylog={'date':day.isoformat(),'source_attribution':edinet.ATTRIBUTION}
                     report['edinet_days'].append(daylog)
                     try:
                         check_budget()
@@ -222,8 +227,10 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                 used[c['id']]+=1
                 try:
                     if e['compliance_mode']=='statutory_api':
+                        read['source_attribution']=edinet.ATTRIBUTION
                         f=item['filing']
                         blocks,pub,doc=edinet.report_document(f,key,output)
+                        read['section_blocks']=len(blocks)
                         if f['edinetCode']!=c['edinet_code']:
                             # Group disclosures must identify this operating company in the same passage.
                             names=[c['name'],*c['china_entities']]
@@ -269,6 +276,9 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                     read.update(status='failed',reason=reason)
                     if reason.endswith(('http_401','http_403','http_429','access_restricted')) or 'robots' in reason:
                         blocked_scopes.update(statutory if e['compliance_mode']=='statutory_api' else [scope])
+                        if e['compliance_mode']=='statutory_api':
+                            for target in statutory:
+                                sources[target][3].update(status='stopped',reason=reason)
                     stats['failures']+=1
             stats['requests']=budget['used']
         stats['pending']=sum(len(s['pending']) for _,_,s,_ in sources.values())

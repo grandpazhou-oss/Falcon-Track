@@ -49,7 +49,7 @@
         },
         {
           "entry_id": "edinet",
-          "source_type": "edinet",
+          "source_type": "edinet_api_v2",
           "role": "filings",
           "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
           "compliance_mode": "statutory_api",
@@ -121,7 +121,7 @@
         },
         {
           "entry_id": "edinet",
-          "source_type": "edinet",
+          "source_type": "edinet_api_v2",
           "role": "filings",
           "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
           "compliance_mode": "statutory_api",
@@ -190,7 +190,7 @@
         },
         {
           "entry_id": "edinet",
-          "source_type": "edinet",
+          "source_type": "edinet_api_v2",
           "role": "filings",
           "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
           "compliance_mode": "statutory_api",
@@ -266,7 +266,7 @@
         },
         {
           "entry_id": "edinet",
-          "source_type": "edinet",
+          "source_type": "edinet_api_v2",
           "role": "filings",
           "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
           "compliance_mode": "statutory_api",
@@ -305,7 +305,7 @@
       "entries": [
         {
           "role": "news",
-          "url": "https://www.sumibe.co.jp/topics/2026/index.html",
+          "url": "https://www.sumibe.co.jp/topics/{year}/index.html",
           "source_type": "list",
           "entry_id": "news",
           "compliance_mode": "metadata_pointer",
@@ -334,7 +334,7 @@
         },
         {
           "entry_id": "edinet",
-          "source_type": "edinet",
+          "source_type": "edinet_api_v2",
           "role": "filings",
           "url": "https://api.edinet-fsa.go.jp/api/v2/documents.json",
           "compliance_mode": "statutory_api",

@@ -1,4 +1,4 @@
-# 目标日企名单试点 r2
+# 目标日企名单试点 r2.1
 
 这条手动命令监控指定日企的大陆经营变化。营业可以回查公告、判断项目进度，并自行决定是否联系。结果写进专用目录，工作台分级和营业反馈由原有流程管理。5 家企业都是研究示例，未经营业选定。
 
@@ -26,7 +26,7 @@ Windows PowerShell 可在项目目录直接运行：
 
 ## 四级读取范围
 
-合规档位以**入口**为单位，企业可以同时有多个档位。实时 robots 与访问限制始终优先。升级档位前需核对具体入口的使用条件并更新审阅日期。
+合规档位以**入口**为单位，企业可以同时有多个档位。L1/L3 网页和订阅均先检查 robots。读取 robots 超时可在原请求预算内短暂退避再试一次。升级档位前需核对具体入口的使用条件并更新审阅日期。
 
 | 档位 | 读取内容 | 输出 |
 |---|---|---|
@@ -43,7 +43,7 @@ Windows PowerShell 可在项目目录直接运行：
 | nishikawa | 西川ゴム工業株式会社 | E01112 | 新闻与 IR 列表 L1 |
 | shibaura | 芝浦機械株式会社 | E01482 | 新闻与 IR 列表 L1 |
 | oval | 株式会社オーバル | E02270 | 官网要求事先联系，保留 L4；经产省 gBizINFO 的该法人披露索引为 L3，通常只显示「有価証券報告書」 |
-| sumibe | 住友ベークライト株式会社 | E00819 | 2026 年度新闻目录 L3，跨年需核对下一年度的公开索引 |
+| sumibe | 住友ベークライト株式会社 | E00819 | 年度新闻目录 L3。运行时展开 `{year}`，1 月同时查看当年和上年，两份目录独立保存水位 |
 
 [静态名单](../config/target_companies.json) 可登记 1–30 家。字段包括中日名称、行业、营业负责人、提交者代码及核验出处、已核对的在华主体名称/别名、关系状态和证据，以及入口类型、使用条件和核对日期。其余四家未登记额外母公司过滤代码。修改源配置后重新运行查看名单；配置中不填写密钥或运行水位。新增 HTML 列表可指定 `links_xpath` 与 `title_xpath` 精确取到新闻标题。固定订阅读取本身不提供查询能力。
 
@@ -57,6 +57,15 @@ Windows PowerShell 可在项目目录直接运行：
 
 Windows 用 `.\.venv\Scripts\python.exe` 替换解释器。也可由启动器注入进程环境变量 `EDINET_API_KEY`。避免写进项目的 .env、配置文件或命令行参数。没有凭据时每个 L2 入口都会记录 `skipped_missing_api_key` 并继续其他档位。客户端只向固定金融厅 TLS 主机发送带密钥的业务请求，对外账本仅保留无凭据的 URL 与 HTTP 状态；API 响应错误正文不会进入日志。文档的 `url` 是不带认证参数的接口位置，回查本地原件不需要密钥。[金融厅 API 规格](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0110.html) · [CSV 有无标志说明](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0090_001.html)
 
+L2 的 `source_type` 为 `edinet_api_v2`。自定义 r2 配置中的旧值 `edinet` 需要改名。仅对金融厅官方 HTTPS 主机的认证清单及文书端点使用专用 API 通道，省略网页 robots 预检。请求间隔至少 1.2 秒，拒绝重定向；HTTP 状态或 JSON 错误体报告 401、429 时停止本批 EDINET 读取。出处随报告和事件证据保存为「出典：EDINET（金融庁）」。
+
+按已知**提交日**核对单家公司时，用 `--edinet-date` 替代 `--edinet-days`。例如在独立目录核读オーバル提交的年度报告：
+
+```sh
+.venv/bin/python manage.py target_watch --online --company oval --mode incremental \
+  --edinet-date 2026-06-19 --max-requests 12 --output "$HOME/falcon-oval-20260619"
+```
+
 ## 标题评分与业务判断
 
 [外置规则](../config/title_prescore_rules.json) 与项目城市表共同评分。地域或在华主体取最高一档（45 / 60），强、中动作也取最高一档（35 / 25）。弱全球信号加 15，常规噪音减 80，无正向地域时单一外国地名减 60。日本「中国地方」「中国支社」「中山町」等搭配先从地域匹配中去掉。同一标题独立提到上海等大陆地点时仍保留该证据。
@@ -69,4 +78,4 @@ Windows 用 `.\.venv\Scripts\python.exe` 替换解释器。也可由启动器注
 - `raw/research/` 保存 L1 原件与 L2 法定报告。L3 只保留标题元数据。各轮 `runs/*.json` 记录请求、来源结果、候选/重复/未知、L3 提醒、未完成量和失败原因；`prescore_skipped.jsonl` 可追查被过滤的标题和规则。
 - 新开独立输出目录即可重新建水位；保留旧目录以便回查。停止运行本命令即可停用。回退代码可在干净的发布分支上 revert r2 提交，使用 r1 输出备份。无需数据库迁移或重启工作台。
 
-实际离线回放与真实网站验证分别记在 [r2 验收报告](TARGET_COMPANY_ACCEPTANCE_R2.md)。[r1 记录](TARGET_COMPANY_ACCEPTANCE.md) 保留作历史对照。
+本次 API 清单、指定日文书与数据库校验见 [r2.1 验收报告](TARGET_COMPANY_ACCEPTANCE_R2_1.md)。前版离线回放与真实网站验证记在 [r2 验收报告](TARGET_COMPANY_ACCEPTANCE_R2.md)。[r1 记录](TARGET_COMPANY_ACCEPTANCE.md) 保留作历史对照。

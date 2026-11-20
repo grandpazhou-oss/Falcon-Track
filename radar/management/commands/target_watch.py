@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from pathlib import Path
 
 from django.conf import settings
@@ -22,7 +23,9 @@ class Command(BaseCommand):
         parser.add_argument('--max-requests', type=int, default=12, help='含 robots 与跳转，1–300')
         parser.add_argument('--max-details-per-company','--details-per-entry', type=int, default=3,help='每家公司每批最多读取的详情数量')
         parser.add_argument('--mode',choices=['baseline','incremental'],default='incremental')
-        parser.add_argument('--edinet-days',type=int,default=7)
+        dates=parser.add_mutually_exclusive_group()
+        dates.add_argument('--edinet-days',type=int,default=7)
+        dates.add_argument('--edinet-date',type=date.fromisoformat,metavar='YYYY-MM-DD',help='仅核查该提交日的 EDINET 清单')
         parser.add_argument('--resume',action='store_true',help='从相同名单与日期的中断批次继续')
         parser.add_argument('--query', help='本试点没有搜索入口；提供此参数会报告不支持')
 
@@ -43,7 +46,7 @@ class Command(BaseCommand):
                 raise ValueError('请用 --output 指定业务数据目录以外的独立目录')
             if not 1 <= opts['max_requests'] <= 300 or not 1 <= opts['max_details_per_company'] <= 30 or not 1 <= opts['edinet_days'] <= 365:
                 raise ValueError('请求预算须在 1–300，单企详情上限 1–30，回看天数 1–365')
-            report = run(targets, output, limit=opts['max_requests'], details=opts['max_details_per_company'],mode=opts['mode'],edinet_days=opts['edinet_days'],resume=opts['resume'],
+            report = run(targets, output, limit=opts['max_requests'], details=opts['max_details_per_company'],mode=opts['mode'],edinet_days=opts['edinet_days'],edinet_date=opts['edinet_date'],resume=opts['resume'],
                          references=opts['include_references'], configured=len(companies))
         except (ValueError, OSError, KeyError, TypeError, Timeout) as exc:
             raise CommandError(str(exc)) from exc

@@ -144,12 +144,23 @@ def _robots_allowed(url, deadline, same_origin=False, *, robots_path_only=False)
         if not cached or cached[0] <= time.monotonic():
             robot_url = f'{parsed.scheme}://{parsed.netloc}/robots.txt'
             chain=[];seen=set();target=robot_url
+            retried=False
             for _ in range(6):
                 if target in seen:raise FetchError('robots_or_robots_unavailable:redirect_loop')
                 seen.add(target);validate_url(target)
-                try:response = _request_once(target, 1_000_000, deadline)
-                except FetchError as exc:
-                    raise FetchError('robots_or_robots_unavailable:'+str(exc)) from exc
+                while True:
+                    now=time.monotonic()
+                    # Reserve part of this read's deadline for a single transient timeout.
+                    attempt_deadline=deadline if retried else now+(deadline-now)*0.6
+                    try:
+                        response = _request_once(target, 1_000_000, attempt_deadline)
+                        break
+                    except FetchError as exc:
+                        if retried or str(exc) not in {'timeout','time_limit'} or deadline-time.monotonic()<=0.25:
+                            raise FetchError('robots_or_robots_unavailable:'+str(exc)) from exc
+                        check_budget()
+                        retried=True
+                        time.sleep(0.25)
                 chain.append({'url':target,'status':response['status']})
                 if response['status'] not in {301,302,303,307,308}:break
                 if not response.get('location'):raise FetchError('robots_or_robots_unavailable:invalid_redirect')

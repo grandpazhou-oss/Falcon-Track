@@ -22,7 +22,8 @@ def rate_directory():
 
 
 class RequestLease:
-    def __init__(self, timeout=300):
+    def __init__(self, timeout=300, min_interval=MIN_INTERVAL):
+        self.min_interval=max(MIN_INTERVAL,min_interval)
         self.directory = rate_directory()
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.lock = FileLock(str(self.directory / 'public-request.lock'), timeout=timeout)
@@ -39,9 +40,9 @@ class RequestLease:
                 # Monotonic clocks restart on reboot; corrupted values fail safe.
                 elapsed = now - last if 0 <= last <= now else 0
             except (OSError, ValueError, OverflowError):
-                elapsed = 0 if self.state.exists() else MIN_INTERVAL
-            if elapsed < MIN_INTERVAL:
-                time.sleep(MIN_INTERVAL - elapsed)
+                elapsed = 0 if self.state.exists() else self.min_interval
+            if elapsed < self.min_interval:
+                time.sleep(self.min_interval - elapsed)
             # Mark start as well as completion so a crashed process still leaves a guard.
             self.state.write_text(str(time.monotonic()), encoding='ascii')
         except BaseException:
@@ -61,8 +62,8 @@ class RequestLease:
 
 
 @contextmanager
-def public_request(timeout=300):
-    lease = RequestLease(timeout).acquire()
+def public_request(timeout=300, *, min_interval=MIN_INTERVAL):
+    lease = RequestLease(timeout,min_interval).acquire()
     try:
         yield
     finally:

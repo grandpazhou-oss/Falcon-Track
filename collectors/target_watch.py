@@ -71,8 +71,11 @@ def load_targets(path):
             # Only this government company profile can be an off-site pointer index.
             gbiz = (u[:3]==('https','info.gbiz.go.jp','/hojin/ichiran') and
                     re.fullmatch(r'hojinBango=[0-9]{13}',u.query) and kind=='list' and mode=='metadata_pointer')
+            if ('{' in e['url'] or '}' in e['url']) and (mode not in {'full_archive','metadata_pointer'}
+                    or '{year}' in u.netloc or re.search('[{}]',e['url'].replace('{year}',''))):
+                raise ValueError('年度占位符仅适用于 L1/L3 的路径或查询')
             if mode=='statutory_api':
-                if kind!='edinet' or e['url']!='https://api.edinet-fsa.go.jp/api/v2/documents.json' or not (c.get('edinet_code') or c.get('parent_edinet_code')):
+                if kind!='edinet_api_v2' or e['url']!='https://api.edinet-fsa.go.jp/api/v2/documents.json' or not (c.get('edinet_code') or c.get('parent_edinet_code')):
                     raise ValueError('法定披露入口或代码无效')
             elif (not official(e['url']) and not gbiz or kind not in {'rss','list','detail','pdf'}
                   or mode=='metadata_pointer' and kind not in {'rss','list'}
@@ -81,6 +84,16 @@ def load_targets(path):
             e['kind']=kind
         c.setdefault('china_entities',[r['name'] for r in c['relations'] if r['status']=='verified'])
     return companies
+
+
+def expanded_entries(entries, day):
+    for entry in entries:
+        if entry['compliance_mode'] in {'full_archive','metadata_pointer'} and '{year}' in entry['url']:
+            years=(day.year,day.year-1) if day.month==1 else (day.year,)
+            for year in years:
+                yield dict(entry,url=entry['url'].replace('{year}',str(year)))
+        else:
+            yield entry
 
 
 def discover(response, kind, entry=None):
@@ -148,6 +161,8 @@ def store_event(events, company_id, fact, title, doc):
         for old in event['evidence']:
             same_url = canonical_url(old['url']) == url
             if same_url and old['sha256'] == doc['sha256']:
+                if 'source_attribution' in doc:
+                    event['source_attribution']=old['source_attribution']=doc['source_attribution']
                 return 'duplicate', event['id']
             same_subject = all(old[k] == fact[k] for k in ('china_entity','place','action'))
             same_title = bool(heading and heading == compact(TITLE_REV.sub('', old['title'])))
@@ -172,6 +187,8 @@ def store_event(events, company_id, fact, title, doc):
                  'possible_related': sorted(set(related + [e['id'] for e in matches])), 'evidence': []}
         events.append(event)
         result = 'suspected' if event['possible_related'] else 'new'
+    if 'source_attribution' in doc:
+        event['source_attribution']=doc['source_attribution']
     if not any(v['sha256']==doc['sha256'] and canonical_url(v['url'])==url for v in event['evidence']):
         event['evidence'].append({**doc, 'title':title, **fact})
     return result, event['id']

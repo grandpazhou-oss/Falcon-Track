@@ -30,8 +30,8 @@ def company(i=0, mode='full_archive', kind='list'):
     return {'id':f'c{i}','name':COMPANY,'aliases':[],'relations':[
         {'name':ENTITY,'place':'上海','status':'verified','url':host,'basis':'合成测试'}],
         'edinet_code':'E00001','parent_edinet_code':'E00002','china_entities':[ENTITY],
-        'entries':[{'url':edinet.BASE+'.json' if kind=='edinet' else host+'news',
-                    'role':'news','kind':kind,'entry_id':'news','compliance_mode':mode}]}
+        'entries':[{'url':edinet.BASE+'.json' if kind=='edinet_api_v2' else host+'news',
+                    'role':'news','source_type':kind,'kind':kind,'entry_id':'news','compliance_mode':mode}]}
 
 
 def response(url,body):
@@ -69,14 +69,14 @@ def filing(kind='180',code='E00002'):
                 submitDateTime='2026-11-20 10:00',csvFlag='1',pdfFlag='1')
 
 
-def csv_zip(rows):
+def csv_zip(rows,encoding='utf-16'):
     text=io.StringIO()
     wr=csv.writer(text,delimiter='\t')
     wr.writerow(['要素ID','項目名','値'])
     wr.writerows(rows)
     b=io.BytesIO()
     with zipfile.ZipFile(b,'w') as z:
-        z.writestr('XBRL_TO_CSV/jpcrp-test.csv',text.getvalue().encode('utf-16'))
+        z.writestr('XBRL_TO_CSV/jpcrp-test.csv',text.getvalue().encode(encoding))
     return b.getvalue()
 
 
@@ -93,13 +93,16 @@ def test_shared_filing_list_and_evidence(tmp_path,monkeypatch,kind):
         return payload
     monkeypatch.setattr(edinet,'request',read)
     monkeypatch.setattr(edinet,'api_key',lambda:KEY)
-    c=company(mode='statutory_api',kind='edinet')
-    unrelated=company(1,mode='statutory_api',kind='edinet')
+    c=company(mode='statutory_api',kind='edinet_api_v2')
+    unrelated=company(1,mode='statutory_api',kind='edinet_api_v2')
     unrelated.update(name='別会社',china_entities=[],relations=[],edinet_code='E99998',parent_edinet_code=None)
     result=batch.run([c,unrelated],tmp_path,limit=16,edinet_days=1)
     assert len(calls)==2 and len(result['reads'])==1
     assert result['stats']['new_events']==1
-    ev=json.loads((tmp_path/'target-events.json').read_text(encoding='utf-8'))['events'][0]['evidence'][0]
+    event=json.loads((tmp_path/'target-events.json').read_text(encoding='utf-8'))['events'][0]
+    ev=event['evidence'][0]
+    for record in [event,ev,result,*result['edinet_days'],*result['entries'],*result['reads']]:
+        assert record['source_attribution']=='出典：EDINET（金融庁）'
     assert ev['place']=='上海' and 'row 2' in ev['locator'] and ev['publication_date']['value']=='2026-11-20'
     assert ev['planned_date']['value']=='2027-03' and ev['sha256']==hashlib.sha256(payload).hexdigest()
     assert all(KEY.encode() not in p.read_bytes() for p in tmp_path.rglob('*') if p.is_file())
@@ -107,7 +110,7 @@ def test_shared_filing_list_and_evidence(tmp_path,monkeypatch,kind):
 
 
 def test_parent_unrelated_missing_key_and_empty_list(tmp_path,monkeypatch):
-    c=company(mode='statutory_api',kind='edinet')
+    c=company(mode='statutory_api',kind='edinet_api_v2')
     monkeypatch.setattr(edinet,'api_key',lambda:'')
     assert batch.run([c],tmp_path,limit=4)['stats']['skipped_missing_api_key']==1
     monkeypatch.setattr(edinet,'request',lambda *a:b'{"metadata":{"status":"200"},"results":[]}')
@@ -124,17 +127,18 @@ def test_secret_stays_on_wire_only(tmp_path,monkeypatch,caplog,status):
     class FakeTLS:
         def __init__(self,*a,**kw): pass
         def request(self,method,path,headers):
+            assert self.debuglevel==0
             assert 'Subscription-Key=synthetic-private-fixture%21' in path
         def getresponse(self):
             return type('Response',(),{'status':status})()
         def close(self): pass
     monkeypatch.setattr(edinet.http.client,'HTTPSConnection',FakeTLS)
-    monkeypatch.setattr(public_fetch,'_robots_allowed',lambda *a,**k:True)
+    monkeypatch.setattr(public_fetch,'_robots_allowed',lambda *a,**k:pytest.fail('API must not read robots'))
     monkeypatch.setattr(public_fetch,'validate_url',lambda u:(urlsplit(u),'93.184.216.34'))
     monkeypatch.setattr(edinet,'api_key',lambda:KEY)
     with pytest.raises(ValueError,match=f'edinet_http_{status}') as caught:
         edinet.filings(DAY,{'E00001'},KEY)
-    report=batch.run([company(mode='statutory_api',kind='edinet')],tmp_path,limit=5,edinet_days=1)
+    report=batch.run([company(mode='statutory_api',kind='edinet_api_v2')],tmp_path,limit=5,edinet_days=1)
     for text in [str(caught.value),json.dumps(report),caplog.text]:
         assert KEY not in text and 'Subscription-Key' not in text
 
@@ -309,7 +313,7 @@ def test_blocked_filing_list_stops_queued_api_reads(tmp_path,monkeypatch):
         return result
     monkeypatch.setattr(edinet,'filings',listing)
     monkeypatch.setattr(edinet,'report_document',lambda *a:pytest.fail('request after rate limit'))
-    report=batch.run([company(mode='statutory_api',kind='edinet')],tmp_path,limit=8,edinet_days=2)
+    report=batch.run([company(mode='statutory_api',kind='edinet_api_v2')],tmp_path,limit=8,edinet_days=2)
     assert report['entries'][0]['status']=='stopped' and report['stats']['pending']==1
     assert report['reads']==[]
 
@@ -320,3 +324,87 @@ def test_edinet_200_error_envelope_never_echoes_message(envelope):
     with pytest.raises(ValueError,match='edinet_http_') as caught:
         edinet.checked_body(body)
     assert KEY not in str(caught.value)
+
+
+@pytest.mark.parametrize('url', ['https://other.example/api/v2/documents.json?date=2026-06-19&type=2',
+    'https://api.edinet-fsa.go.jp.other.example/api/v2/documents/S100AAAA?type=2',
+    'https://api.edinet-fsa.go.jp/other?type=2','http://api.edinet-fsa.go.jp/api/v2/documents/S100AAAA?type=2'])
+def test_authenticated_transport_rejects_unapproved_target(url,monkeypatch):
+    monkeypatch.setattr(public_fetch,'validate_url',lambda *a:pytest.fail('unexpected network'))
+    with pytest.raises(ValueError,match='invalid_edinet_endpoint'):
+        edinet.request(url,KEY,1000)
+
+
+def test_only_registered_api_source_uses_transport(tmp_path,monkeypatch):
+    c=company(mode='statutory_api',kind='edinet_api_v2')
+    c['entries'][0]['source_type']='list'
+    monkeypatch.setattr(edinet,'api_key',lambda:pytest.fail('unauthorized adapter'))
+    r=batch.run([c],tmp_path,limit=4)
+    assert r['entries'][0]['reason']=='invalid_edinet_source' and r['stats']['requests']==0
+
+
+@pytest.mark.parametrize('when,years', [(date(2026,12,31),[2026]),(date(2027,1,1),[2027,2026]),(date(2027,2,1),[2027])])
+def test_year_expansion_drives_distinct_watermarks(tmp_path,monkeypatch,when,years):
+    c=company(mode='metadata_pointer')
+    c['entries'][0]['url']+='/{year}/'
+    monkeypatch.setattr(batch.timezone,'localdate',lambda:when)
+    calls=[]
+    def read(url,**opts):
+        calls.append(url)
+        return response(url,'<a href="detail">上海新工場</a>')
+    monkeypatch.setattr(batch,'fetch',read)
+    r=batch.run([c],tmp_path,limit=8)
+    assert calls==[f'https://issuer0.example/news/{year}/' for year in years]
+    assert r['stats']['pointer_only']==len(years)
+    assert batch.run([c],tmp_path,limit=8)['stats']['pointer_only']==0
+
+
+@pytest.mark.parametrize('first,expected,status', [('timeout',2,True),('http_403',1,False),('http_404',1,True),('invalid',1,False)])
+def test_robots_timeout_only_retried(monkeypatch,first,expected,status):
+    public_fetch.clear_robots_cache()
+    monkeypatch.setattr(public_fetch,'validate_url',lambda u:(urlsplit(u),'93.184.216.34'))
+    calls=[]
+    def read(url,limit,deadline):
+        calls.append(url)
+        if len(calls)==1:
+            if first=='timeout':raise public_fetch.FetchError('timeout')
+            if first=='invalid':return {'status':200,'content_type':'text/html','body':b'<html>'}
+            return {'status':int(first[-3:]),'content_type':'text/plain','body':b''}
+        return {'status':200,'content_type':'text/plain','body':b'User-agent: *\nAllow: /'}
+    monkeypatch.setattr(public_fetch,'_request_once',read)
+    try:
+        assert public_fetch.robots_allowed('https://issuer.example/news') is status
+        assert len(calls)==expected
+    finally:
+        public_fetch.clear_robots_cache()
+
+
+def test_requested_edinet_date_replaces_lookback(tmp_path,monkeypatch):
+    seen=[]
+    monkeypatch.setattr(edinet,'api_key',lambda:KEY)
+    monkeypatch.setattr(edinet,'filings',lambda day,*a:seen.append(day) or [])
+    batch.run([company(mode='statutory_api',kind='edinet_api_v2')],tmp_path,limit=9,edinet_date=date(2026,6,19))
+    assert seen==[date(2026,6,19)]
+
+
+@pytest.mark.parametrize('error',[401,404,429,503])
+def test_business_error_in_http_200(error):
+    with pytest.raises(ValueError,match=f'^edinet_http_{error}$'):
+        edinet.checked_body(json.dumps({'metadata':{},'statusCode':error,'message':KEY}).encode())
+
+
+def test_pdf_skips_table_of_contents_keeps_real_section_page():
+    pages=[{'page':2,'text':'４【関係会社の状況】……… 12\n'+QUOTE},
+           {'page':12,'text':'４【関係会社の状況】\n'+QUOTE+'\n第５【その他】\n対象外'}]
+    assert edinet.pdf_blocks(pages,'120')==[('PDF p.12','４【関係会社の状況】'),('PDF p.12',QUOTE)]
+
+
+def test_utf8_bom_business_error():
+    with pytest.raises(ValueError,match='^edinet_http_401$'):
+        edinet.checked_body('{"statusCode":401}'.encode('utf-8-sig'))
+
+
+@pytest.mark.parametrize('encoding',['utf-8-sig','utf-16-le','utf-16'])
+def test_zip_text_encodings(encoding):
+    blocks=edinet.csv_blocks(csv_zip([['x','関係会社の状況',QUOTE]],encoding),'120')
+    assert blocks==[('XBRL_TO_CSV/jpcrp-test.csv row 2',QUOTE)]
