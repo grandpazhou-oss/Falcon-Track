@@ -1,0 +1,55 @@
+{% extends 'radar/base.html' %}
+{% block title %}{{ "数据来源"|ui:ui_lang }}{% endblock %}{% block breadcrumb %}{{ "数据来源"|ui:ui_lang }}{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>{{ "数据来源"|ui:ui_lang }}</h1><a class="button secondary" href="{% url 'radar:runs' %}">{{ "查看运行记录 →"|ui:ui_lang }}</a></div>
+<section class="scheduler-panel"><h2>{% if automatic_enabled %}{{ "定时采集已开启"|ui:ui_lang }}{% else %}{{ "定时采集已暂停"|ui:ui_lang }}{% endif %}</h2>
+<form method="post" action="{% url 'radar:scheduler_settings' %}">{% csrf_token %}
+<input type="hidden" name="enabled" value="{% if automatic_enabled %}false{% else %}true{% endif %}">
+<button type="submit" class="button secondary">{% if automatic_enabled %}{{ "暂停定时采集"|ui:ui_lang }}{% else %}{{ "开启定时采集"|ui:ui_lang }}{% endif %}</button></form></section>
+{% if not source_worker_alive %}<div class="notice warning worker-offline-note"><strong>{{ "采集后台当前未运行。"|ui:ui_lang }}</strong>
+{{ "仍可提交任务。请启动项目后台，或从项目目录运行采集命令。"|ui:ui_lang }}
+<p>macOS <code>.venv/bin/python manage.py source_worker</code> · Windows <code>.venv\Scripts\python.exe manage.py source_worker</code></p></div>{% endif %}
+{% if active_runs %}<div class="notice info" data-auto-refresh="true">{{ active_runs }} {{ "个任务正在排队或执行，页面自动更新。"|ui:ui_lang }}</div>{% endif %}
+<div class="source-grid">
+{% for source in sources %}
+<section class="panel source-card" id="source-{{ source.pk }}" data-source-id="{{ source.pk }}" data-source-mode="{{ source.ui_mode }}">
+<div class="source-card-head"><span class="source-index">{{ source.pk|stringformat:"03d" }}</span><span class="badge">{{ source.ui_kind|ui:ui_lang }}</span>
+<span class="source-toggle-label">{% if source.alt_source %}{{ "可采集替代来源"|ui:ui_lang }}{% elif source.ui_mode == 'B' %}{{ "仅人工导入"|ui:ui_lang }}{% elif source.ui_mode == 'C' %}{{ "暂不可用 · 建议归档"|ui:ui_lang }}{% elif source.enabled %}{{ "已纳入采集计划"|ui:ui_lang }}{% else %}{{ "未纳入采集计划"|ui:ui_lang }}{% endif %}</span></div>
+<h2>{{ source.name|ui:ui_lang }}</h2>
+{% if source.ui_url %}<a class="source-address" href="{{ source.ui_url }}" target="_blank" rel="noopener noreferrer">{{ "查看原始栏目 ↗"|ui:ui_lang }}</a>{% endif %}
+<div class="source-facts"><div><span>{{ "已保存线索"|ui:ui_lang }}</span><strong>{{ source.lead_count }}</strong></div>
+<div><span>{{ "最近成功"|ui:ui_lang }}</span><strong class="date-value">{{ source.ui_last_success|date:"m.d H:i"|default:"尚未成功采集"|ui:ui_lang }}</strong></div></div>
+<div class="source-last-run"><span>{{ "最近任务"|ui:ui_lang }}</span>{% if source.latest_run %}<span class="badge {{ source.latest_run.status }}">{{ source.latest_run.ui_status|ui:ui_lang }}</span>{% else %}<span>{{ "尚未运行"|ui:ui_lang }}</span>{% endif %}</div>
+{% if source.latest_run.finished_at and source.latest_run.discovered_count %}<p class="source-description">{{ "最近一次读到"|ui:ui_lang }} {{ source.latest_run.discovered_count }} {{ "条线索"|ui:ui_lang }}</p>{% endif %}
+{% if source.ui_error %}<p class="source-error">{{ source.ui_error|ui:ui_lang }}</p>{% endif %}
+{% if source.ui_note %}<p>{{ source.ui_note|ui:ui_lang }}</p>{% endif %}
+{% if source.latest_run.stats.index_entries %}<p>{{ "本次更新的原站链接"|ui:ui_lang }} · {{ source.latest_run.stats.index_entries|length }}</p>{% endif %}
+{% if source.ui_note and source.latest_run.stats.details_read or source.latest_run.stats.index_entries %}
+<details><summary>{{ "查看本次取得的资料"|ui:ui_lang }}</summary><ul>
+{% for entry in source.latest_run.stats.details_read %}<li><a href="{{ entry.url }}" target="_blank" rel="noopener noreferrer">{{ entry.title }}</a></li>{% endfor %}
+{% for entry in source.latest_run.stats.index_entries %}<li><a href="{{ entry.url }}" target="_blank" rel="noopener noreferrer">{{ entry.title }}</a></li>{% endfor %}
+</ul></details>{% endif %}
+{% if source.ui_mode == 'A' %}
+<div class="source-card-actions"><form method="post" action="{% url 'radar:run_source' source.pk %}">{% csrf_token %}
+<button class="button primary" type="submit">{{ "采集一次"|ui:ui_lang }}</button></form>
+{% if source.latest_run.ui_active %}<span>{{ "已有任务，重复点击会复用。"|ui:ui_lang }}</span>{% endif %}</div>
+{% if not source.ui_note %}<details class="source-settings"><summary>{{ "采集计划"|ui:ui_lang }}</summary>
+<form method="post" action="{% url 'radar:source_settings' source.pk %}" class="form-stack">{% csrf_token %}
+{% for field in source.settings_form %}
+{% if field.name != 'keywords' or source.key == 'dfmc_nissan' %}<div class="form-field">{% ui_field field ui_lang %}</div>{% endif %}
+{% endfor %}
+<button type="submit" class="button small secondary">{{ "保存计划"|ui:ui_lang }}</button></form></details>{% endif %}
+{% else %}
+<p class="source-description">{{ source.ui_reason|ui:ui_lang }}</p>
+{% if source.alt_source %}<form method="post" action="{% url 'radar:run_source' source.alt_source.pk %}">{% csrf_token %}
+<button class="button primary" type="submit">{{ source.alt_label|ui:ui_lang }}</button>
+<a href="#source-{{ source.alt_source.pk }}">{{ "查看替代来源的运行结果"|ui:ui_lang }}</a>
+{% if source.alt_source.latest_run %}<small>{{ "替代来源最近任务"|ui:ui_lang }} #{{ source.alt_source.latest_run.pk }} · {{ source.alt_source.latest_run.ui_status|ui:ui_lang }}</small>{% endif %}</form>{% endif %}
+{% if source.ui_mode == 'B' %}<div class="source-card-actions">
+<a class="button secondary" href="{% if source.key == 'jbic_sme_china' %}{% url 'radar:jbic_import' %}{% else %}{% url 'radar:import' %}{% endif %}">{{ "去导入原文"|ui:ui_lang }}</a></div>{% endif %}
+{% endif %}
+</section>
+{% empty %}<section class="panel empty-state"><h2>{{ "还没有登记来源"|ui:ui_lang }}</h2>
+<a class="button secondary" href="{% url 'radar:import' %}">{{ "导入原文"|ui:ui_lang }}</a></section>{% endfor %}
+</div>
+{% endblock %}

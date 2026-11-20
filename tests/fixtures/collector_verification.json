@@ -1,0 +1,148 @@
+{
+  "checked_at_utc": "2026-11-13T11:35:39.530901+00:00",
+  "runtime": "Linux x86_64 / Python 3.12 / Scrapy 2.20.0",
+  "live_runs": [
+    {
+      "source_key": "ysczw",
+      "status": "partial",
+      "next_cursor": 1,
+      "stats": {
+        "started_at": "2026-11-13T11:34:19.753636+00:00",
+        "finished_at": "2026-11-13T11:34:32.669678+00:00",
+        "request_count": 5,
+        "response_count": 5,
+        "list_pages": 1,
+        "listed_rows": 23,
+        "detail_requested": 3,
+        "detail_succeeded": 3,
+        "skipped_seen": 0,
+        "new_items": 3,
+        "refreshed_items": 0,
+        "partial_access_items": 3,
+        "blocked_access_items": 0,
+        "error_count": 0,
+        "errors": [],
+        "budget_limited": true,
+        "coverage_complete": false,
+        "no_new_data": false,
+        "robots_obeyed": true,
+        "finish_reason": "finished"
+      },
+      "documents": [
+        {
+          "external_id": "71635",
+          "url": "https://www.ysczw.com/index.php?m=goods&a=details&content_id=71635",
+          "kind": "procurement",
+          "access_level": "partial",
+          "text_sha256": "db162eca3875bd679fb488c44d885c07d336e8856e8ac1c7750c7460dd48fe96"
+        },
+        {
+          "external_id": "71636",
+          "url": "https://www.ysczw.com/index.php?m=goods&a=details&content_id=71636",
+          "kind": "procurement",
+          "access_level": "partial",
+          "text_sha256": "f3915fb8bd923116465fe74abcda98a8b3b3bd05c7ad3ebe989f0615457ff17c"
+        },
+        {
+          "external_id": "71637",
+          "url": "https://www.ysczw.com/index.php?m=goods&a=details&content_id=71637",
+          "kind": "procurement",
+          "access_level": "partial",
+          "text_sha256": "d47cc888a2d7d23b1150211a8ac707b902e9c5774507776c20ae1034508bac9b"
+        }
+      ]
+    },
+    {
+      "source_key": "suzhou_epia",
+      "status": "partial",
+      "next_cursor": 1,
+      "stats": {
+        "started_at": "2026-11-13T11:34:19.753040+00:00",
+        "finished_at": "2026-11-13T11:34:31.238804+00:00",
+        "request_count": 4,
+        "response_count": 4,
+        "list_pages": 1,
+        "listed_rows": 12,
+        "detail_requested": 2,
+        "detail_succeeded": 2,
+        "skipped_seen": 0,
+        "new_items": 2,
+        "refreshed_items": 0,
+        "partial_access_items": 0,
+        "blocked_access_items": 0,
+        "error_count": 0,
+        "errors": [],
+        "budget_limited": true,
+        "coverage_complete": false,
+        "no_new_data": false,
+        "robots_obeyed": true,
+        "finish_reason": "finished"
+      },
+      "documents": [
+        {
+          "external_id": "2658",
+          "url": "https://www.sz-epia.cn/xmgsshow.asp?id=2658",
+          "kind": "early_signal",
+          "access_level": "public",
+          "text_sha256": "cd146db91fc60d4b16ea5a93036195af7bb2a380d666dd63ec94486acaf37781"
+        },
+        {
+          "external_id": "2654",
+          "url": "https://www.sz-epia.cn/xmgsshow.asp?id=2654",
+          "kind": "early_signal",
+          "access_level": "public",
+          "text_sha256": "1af47fd8e5ba21ac6c7ec35acaf14ece54648c7ba15b291c443277727ccd74eb"
+        }
+      ]
+    },
+    {
+      "source_key": "ysczw",
+      "status": "partial",
+      "next_cursor": 1,
+      "stats": {
+        "started_at": "2026-11-13T11:35:27.927102+00:00",
+        "finished_at": "2026-11-13T11:35:39.530901+00:00",
+        "request_count": 4,
+        "response_count": 4,
+        "list_pages": 1,
+        "listed_rows": 23,
+        "detail_requested": 2,
+        "detail_succeeded": 2,
+        "skipped_seen": 3,
+        "new_items": 2,
+        "refreshed_items": 0,
+        "partial_access_items": 2,
+        "blocked_access_items": 0,
+        "error_count": 0,
+        "errors": [],
+        "budget_limited": true,
+        "coverage_complete": false,
+        "no_new_data": false,
+        "robots_obeyed": true,
+        "finish_reason": "finished"
+      },
+      "documents": [
+        {
+          "external_id": "71634",
+          "url": "https://www.ysczw.com/index.php?m=goods&a=details&content_id=71634",
+          "kind": "procurement",
+          "access_level": "partial",
+          "text_sha256": "ae8353c448d01d51d7bd56709bb80a04a2d96d1f18f5431bfc854de93f112c22"
+        },
+        {
+          "external_id": "71633",
+          "url": "https://www.ysczw.com/index.php?m=goods&a=details&content_id=71633",
+          "kind": "procurement",
+          "access_level": "partial",
+          "text_sha256": "8940c2f657b49d8805a5440bb3e422369438154d71e1b9c19bb4f81a9055933f"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Public pages only; no account or paywall bypass.",
+    "Live HTML stored outside distribution under artifacts/live.",
+    "Synthetic HTML test fixtures are explicitly marked.",
+    "Desktop browser, macOS and Windows native execution not tested here."
+  ]
+}

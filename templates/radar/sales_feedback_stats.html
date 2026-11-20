@@ -1,0 +1,12 @@
+{% extends 'radar/base.html' %}
+{% block title %}{{ "营业反馈统计"|ui:ui_lang }}{% endblock %}
+{% block content %}
+<h1>{{ "营业反馈统计"|ui:ui_lang }}</h1>
+<p>{{ "统计当前 A/B 级商机的营业状态。"|ui:ui_lang }}</p>
+<section class="panel"><div class="panel-body">
+<h2>{{ "营业状态"|ui:ui_lang }}</h2>
+<dl>{% for label,count in statuses %}<dt>{{ label|ui:ui_lang }}</dt><dd>{{ count }}</dd>{% endfor %}</dl>
+<h2>{{ "退回原因"|ui:ui_lang }}</h2>
+<dl>{% for label,count in reasons %}<dt>{{ label|ui:ui_lang }}</dt><dd>{{ count }}</dd>{% endfor %}</dl>
+</div></section>
+{% endblock %}

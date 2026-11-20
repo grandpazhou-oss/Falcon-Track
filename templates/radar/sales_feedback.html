@@ -1,0 +1,19 @@
+{% if feedback_card %}
+<div class="sales-feedback{% if not compact %} full{% endif %}">
+{% if not compact %}<h3>{{ "营业反馈"|ui:ui_lang }}</h3><p>{{ feedback_card.feedback_label|ui:ui_lang }}{% if feedback_card.feedback_reason_label %} · {{ feedback_card.feedback_reason_label|ui:ui_lang }}{% endif %}{% if feedback_card.feedback_note %} · {{ feedback_card.feedback_note }}{% endif %}</p>{% endif %}
+<form method="post" action="{% url 'radar:sales_feedback' %}" class="sales-actions">{% csrf_token %}
+<input type="hidden" name="card" value="{{ feedback_card.detail_url }}">
+{% if not compact %}<label>{{ "备注（可选）"|ui:ui_lang }} <input name="note" maxlength="1000" value="{{ feedback_card.feedback_note }}"></label>{% endif %}
+<button class="button secondary" name="status" value="accepted">{{ "✓ 接受"|ui:ui_lang }}</button>
+<button class="button secondary" name="status" value="hold">{{ "⏸ 暂缓"|ui:ui_lang }}</button>
+</form>
+<details class="sales-reject"><summary>{{ "✕ 退回"|ui:ui_lang }}</summary>
+<form method="post" action="{% url 'radar:sales_feedback' %}">{% csrf_token %}
+<input type="hidden" name="card" value="{{ feedback_card.detail_url }}">
+<label>{{ "退回原因"|ui:ui_lang }}<select name="reason" required><option value="">{{ "请选择"|ui:ui_lang }}</option>{% for key,label in feedback_reasons %}<option value="{{ key }}"{% if key == feedback_card.feedback_reason %} selected{% endif %}>{{ label|ui:ui_lang }}</option>{% endfor %}</select></label>
+<label>{{ "备注（可选）"|ui:ui_lang }}<input name="note" maxlength="1000" value="{{ feedback_card.feedback_note }}"></label>
+<button class="button secondary" name="status" value="rejected">{{ "确认退回"|ui:ui_lang }}</button>
+</form></details>
+{% if compact %}<a class="sales-detail-link" href="{{ feedback_card.detail_url }}">{{ "进入详情 →"|ui:ui_lang }}</a>{% endif %}
+</div>
+{% endif %}

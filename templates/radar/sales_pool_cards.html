@@ -1,0 +1,18 @@
+{% for card in cards %}
+<article class="sales-card" data-source-url="{{ card.source_url }}">
+  <h4>{{ card.company_name|default:'待核'|ui:ui_lang }}</h4>
+  <p>{{ card.label|ui:ui_lang }} {{ "· 开发分"|ui:ui_lang }} {{ card.score }}</p>
+  <p><strong>{{ "在华动作："|ui:ui_lang }}</strong>{{ card.action_label|default:'待核'|ui:ui_lang }}</p>
+  <p><strong>{{ "城市／园区："|ui:ui_lang }}</strong>{{ card.china_location|default:'待核'|ui:ui_lang }} · <strong>{{ "目标时间："|ui:ui_lang }}</strong>{{ card.target_period|default:'待核'|ui:ui_lang }}</p>
+  <details class="card-evidence"><summary>{{ "查看依据与待核事项"|ui:ui_lang }}</summary>
+  <p><strong>{{ "规模："|ui:ui_lang }}</strong>{% if card.size_tier == 'micro_sme' %}{{ "中小微（按来源口径）"|ui:ui_lang }}{% elif card.size_tier == 'mid_large' %}{{ "中大型"|ui:ui_lang }}{% else %}{{ "待核"|ui:ui_lang }}{% endif %}</p>
+  {% if card.source_publication_date %}<p><strong>{{ "来源发布时间："|ui:ui_lang }}</strong>{{ card.source_publication_date }}</p>{% endif %}
+  <p><strong>{{ "日企身份依据："|ui:ui_lang }}</strong>{{ card.japanese_identity_basis|default:'待核'|ui:ui_lang }}{% if card.identity_evidence_url %} · <a href="{{ card.identity_evidence_url }}" target="_blank" rel="noopener noreferrer">{{ "身份依据"|ui:ui_lang }}</a>{% endif %}</p>
+  <p><strong>{{ "待核："|ui:ui_lang }}</strong>{% for item in card.pending %}{{ item|ui:ui_lang }}{% if not forloop.last %}；{% endif %}{% endfor %}</p>
+  <blockquote>{{ card.evidence_quote|default:'待核'|ui:ui_lang }}</blockquote>
+  {% if card.target_period_evidence %}<p><strong>{{ "目标时间依据："|ui:ui_lang }}</strong>{{ card.target_period_evidence }}</p>{% endif %}
+  <p><a class="text-link" href="{{ card.source_url }}" target="_blank" rel="noopener noreferrer">{{ "查看原文 →"|ui:ui_lang }}</a>{% if card.detail_url %} · <a href="{{ card.detail_url }}">{{ "查看研究记录"|ui:ui_lang }}</a>{% endif %}</p>
+  <p><strong>{{ "营业切入参考："|ui:ui_lang }}</strong>{% for item in card.sales_directions %}{{ item|ui:ui_lang }}{% if not forloop.last %}；{% endif %}{% endfor %}</p>
+  </details>
+</article>
+{% empty %}<div class="sales-empty"><strong>{{ "暂无符合条件的记录"|ui:ui_lang }}</strong><p>{{ "发现有依据的业务动向后在此显示。"|ui:ui_lang }}</p></div>{% endfor %}

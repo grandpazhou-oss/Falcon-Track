@@ -1,0 +1,7 @@
+{% if basis %}
+<details><summary>{{ "A 级依据 ·"|ui:ui_lang }} {{ basis.city }} · {{ basis.target_period }}</summary>
+<p>{{ basis.rule }}</p>
+<blockquote>{{ basis.action_quote|linebreaksbr }}</blockquote>
+{% if basis.time_quote != basis.action_quote %}<blockquote>{{ basis.time_quote|linebreaksbr }}</blockquote>{% endif %}
+</details>
+{% endif %}

@@ -1,0 +1,43 @@
+{% with result=run.result.analysis evidence=run.input_snapshot.evidence %}
+{% if run.display_buyer_unconfirmed %}<div class="notice warning">{{ "本次分析未给出可核对的采购主体，请回看原文。"|ui:ui_lang }}</div>{% endif %}
+{% if result and not run.capability_snapshot.regions and not run.capability_snapshot.services and not run.capability_snapshot.industries and not run.capability_snapshot.qualifications and not run.capability_snapshot.exclusions %}<p class="notice warning">{{ "本次未填写公司实际能力，能力适配待确认。"|ui:ui_lang }}</p>{% endif %}
+{% if result.brief %}{% include 'radar/pro_brief.html' %}{% endif %}
+{% if result.facts and ui_lang != "ja" %}
+<section class="brief-section"><h3>{{ "来源事实"|ui:ui_lang }}</h3><ul>{% for f in result.facts %}
+{% if not f.hide_summary %}<li>{% if f.summary_zh %}{{ f.summary_zh }}{% elif f.event_status %}{{ f.field }}{% else %}{{ f.field }}{% if f.value %}：{{ f.value }}{% endif %}{% endif %}
+{% if f.needs_manual_check %}<span class="quiet-note"> {{ "· 需人工复核"|ui:ui_lang }}</span>{% elif f.event_status == 'occurred' %}<span class="quiet-note"> {{ "· 已发生（原文披露）"|ui:ui_lang }}</span>{% elif f.event_status == 'planned' %}<span class="quiet-note"> {{ "· 计划，执行待核"|ui:ui_lang }}</span>{% endif %}</li>{% endif %}
+{% endfor %}</ul></section>{% endif %}
+{% if result.inferences %}<h3>{{ "物流影响推断"|ui:ui_lang }}</h3>{% for x in result.inferences %}<p>{{ x.text }}</p>{% endfor %}{% endif %}
+{% if result.capability_match %}<h3>{{ "公司能力匹配"|ui:ui_lang }}</h3>{% for x in result.capability_match %}<p>{{ x.text }}</p>{% endfor %}{% endif %}
+{% if result.verification %}<h3>{{ "下一步核验"|ui:ui_lang }}</h3>{% for step in result.verification %}<dl><dt>{{ "查什么"|ui:ui_lang }}</dt><dd>{{ step.check }}</dd><dt>{{ "找谁"|ui:ui_lang }}</dt><dd>{{ step.contact_role }}</dd><dt>{{ "问什么"|ui:ui_lang }}</dt><dd>{{ step.question }}</dd></dl>{% endfor %}{% endif %}
+{% if result.questions %}<h3>{{ "待确认问题"|ui:ui_lang }}</h3>{% for x in result.questions %}<p>{{ x }}</p>{% endfor %}{% endif %}
+{% if result.next_steps %}<h3>{{ "下一步建议"|ui:ui_lang }}</h3>{% for x in result.next_steps %}<p>{{ x }}</p>{% endfor %}{% endif %}
+{% if result.outreach_zh or result.outreach_ja %}<details><summary>{{ "首轮破冰联系提纲 · 待人工核实"|ui:ui_lang }}</summary><p lang="zh-CN">{{ result.outreach_zh }}</p><p lang="ja">{{ result.outreach_ja }}</p></details>{% endif %}
+{% if result.facts or evidence.blocks or run.result.validation_errors or run.result.coverage %}
+<details class="brief-evidence"><summary>{{ "查看原始取证依据与校验详情"|ui:ui_lang }}</summary>
+{% for f in result.facts %}
+<h4>{{ f.field }}{% if f.needs_manual_check %} {{ "· 需人工复核"|ui:ui_lang }}{% endif %}</h4>
+{% if f.document_id %}<a href="{% url 'radar:document' f.document_id %}">{{ "原文"|ui:ui_lang }}{% if f.page %}{{ "第"|ui:ui_lang }} {{ f.page }} {{ "页"|ui:ui_lang }}{% endif %}</a>{% endif %}
+{% if f.url %}<a href="{{ f.url }}{% if f.page %}#page={{ f.page }}{% endif %}" rel="noopener noreferrer">{{ "来源原件"|ui:ui_lang }}{% if f.page %} {{ "· PDF 第"|ui:ui_lang }} {{ f.page }} {{ "页"|ui:ui_lang }}{% endif %}</a>{% endif %}
+<blockquote>{{ f.quote }}</blockquote>
+{% if f.scope_quote %}<p>{{ "所在项目原文"|ui:ui_lang }}</p><blockquote>{{ f.scope_quote }}</blockquote>{% endif %}
+{% if f.date_text %}<p>{% if f.date_kind == 'event' %}{{ "动作日期"|ui:ui_lang }}{% else %}{{ "披露日期"|ui:ui_lang }}{% endif %} {{ f.date_text }}{% if f.date_page %} {{ "· PDF 第"|ui:ui_lang }} {{ f.date_page }} {{ "页"|ui:ui_lang }}{% endif %}</p>{% endif %}
+{% if f.date_quote %}<blockquote>{{ f.date_quote }}</blockquote>{% endif %}
+{% endfor %}
+{% if run.result.coverage %}<p>{{ "本次覆盖"|ui:ui_lang }} {{ run.result.coverage.processed_blocks }} / {{ run.result.coverage.total_blocks }} {{ "个原文分段。"|ui:ui_lang }}{% if not run.result.coverage.full_coverage %}{{ "仍有未读分段。"|ui:ui_lang }}{% endif %}</p>{% endif %}
+{% if result.inferences or result.capability_match or result.verification %}
+<details><summary>{{ "旧版建议的出处"|ui:ui_lang }}</summary>
+{% for item in result.inferences %}<p>{{ item.text }}{% for ref in item.evidence_ids %} · <a href="#analysis-{{ run.pk }}-{{ ref }}">{{ "原文分段"|ui:ui_lang }}</a>{% endfor %}</p>{% endfor %}
+{% for item in result.capability_match %}<p>{{ item.text }}{% for ref in item.evidence_ids %} · <a href="#analysis-{{ run.pk }}-{{ ref }}">{{ "原文分段"|ui:ui_lang }}</a>{% endfor %}</p>{% endfor %}
+{% for item in result.verification %}<p>{{ item.question }}{% for ref in item.evidence_ids %} · <a href="#analysis-{{ run.pk }}-{{ ref }}">{{ "原文分段"|ui:ui_lang }}</a>{% endfor %}</p>{% endfor %}
+</details>
+{% endif %}
+{% include 'radar/analysis_validation.html' %}
+{% if evidence.blocks %}<details><summary>{{ "查看本次输入分段"|ui:ui_lang }}</summary>{% for b in evidence.blocks %}<div id="analysis-{{ run.pk }}-{{ b.id }}">
+{% if b.document_id %}<a href="{% url 'radar:document' b.document_id %}">{{ "存档原件"|ui:ui_lang }}</a>{% endif %}
+{% if b.url %}<a href="{{ b.url }}{% if b.page %}#page={{ b.page }}{% endif %}" rel="noopener noreferrer">{{ "来源原件"|ui:ui_lang }}{% if b.page %} {{ "· PDF 第"|ui:ui_lang }} {{ b.page }} {{ "页"|ui:ui_lang }}{% endif %}</a>{% endif %}
+<blockquote>{{ b.text }}</blockquote></div>{% endfor %}</details>{% endif %}
+</details>{% endif %}
+{% if run.result.trace %}<h3>{{ "补全过程"|ui:ui_lang }}</h3>{% for step in run.result.trace %}<p>{{ step.step }} · {{ step.status }} {% if step.url %}<a href="{{ step.url }}" target="_blank" rel="noopener noreferrer">{{ "读取链接"|ui:ui_lang }}</a>{% endif %}{% if step.manual_query %}<a href="{{ step.manual_query }}" target="_blank" rel="noopener noreferrer">{{ "手动检索同一项目"|ui:ui_lang }}</a>{% endif %}</p>{% endfor %}{% endif %}
+{% if run.result.document_id %}<p>{{ run.result.note }} <a href="{% url 'radar:document' run.result.document_id %}">{{ "查看附件及逐页证据"|ui:ui_lang }}</a></p>{% endif %}
+{% endwith %}

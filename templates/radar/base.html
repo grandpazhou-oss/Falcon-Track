@@ -1,0 +1,61 @@
+{% load static %}<!DOCTYPE html>
+<html lang="{% if ui_lang == 'ja' %}ja{% else %}zh-CN{% endif %}">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
+  <script>
+    const root = document.documentElement;
+    let theme = "light";
+    try { if (localStorage.getItem("radar-theme") === "dark") theme = "dark"; } catch {}
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
+  </script>
+  <title>{% block title %}{{ "工作概览"|ui:ui_lang }}{% endblock %} · {{ "商机雷达"|ui:ui_lang }} / FALCON TRACK</title>
+  <link rel="icon" href="{% static 'radar/favicon.png' %}" type="image/png">
+  <link rel="stylesheet" href="{% static 'radar/app.css' %}?v=falcon1"><link rel="stylesheet" href="{% static 'radar/workspace.css' %}?v=falcon1"><link rel="stylesheet" href="{% static 'radar/sales-ui.css' %}?v=falcon1">
+  <script src="{% static 'radar/app.js' %}?v=falcon1" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">{{ "跳到主要内容"|ui:ui_lang }}</a>
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="{% url 'radar:dashboard' %}"><img class="brand-logo" src="{% static 'radar/falcon-logo.png' %}" alt="" width="42" height="42"><span><strong>{{ "商机雷达"|ui:ui_lang }}</strong><small>FALCON TRACK</small></span></a>
+  <nav class="main-nav" aria-label="{{ "主要导航"|ui:ui_lang }}">
+    <h2>{{ "营业工作台"|ui:ui_lang }}</h2>
+    {% include 'radar/nav_item.html' with route='radar:dashboard' key='dashboard' icon='overview' label='营业首页' %}
+    <a href="{% url 'radar:sales_pools' %}?grade=A"{% if active_nav == 'sales_pools' %} class="active" aria-current="page"{% endif %}><svg aria-hidden="true"><use href="{% static 'radar/icons.svg' %}#layers"></use></svg><span class="nav-label">{{ "商机池"|ui:ui_lang }}</span><span class="nav-badges">A {{ nav_count_a }} · B {{ nav_count_b }}</span></a>
+    {% include 'radar/nav_item.html' with route='radar:sales_feedback_stats' key='feedback' icon='history' label='反馈统计' %}
+    <details class="admin-nav"{% if active_nav in 'sources,runs,import,analyses,ai,capability,leads,research,companies' %} open{% endif %}>
+      <summary>{{ "后台与研究管理"|ui:ui_lang }}</summary>
+    {% include 'radar/nav_item.html' with route='radar:leads' key='leads' icon='leads' label='旧商机候选（招投标）' %}
+    {% include 'radar/nav_item.html' with route='radar:research' key='research' icon='research' label='日企经营研究' %}
+    {% include 'radar/nav_item.html' with route='radar:companies' key='companies' icon='company' label='企业名录' %}
+    {% include 'radar/nav_item.html' with route='radar:sources' key='sources' icon='sources' label='数据来源' %}
+    {% include 'radar/nav_item.html' with route='radar:runs' key='runs' icon='history' label='运行记录' %}
+    {% include 'radar/nav_item.html' with route='radar:import' key='import' icon='import' label='导入原文' %}
+    {% include 'radar/nav_item.html' with route='radar:analyses' key='analyses' icon='analysis' label='分析记录' %}
+    {% include 'radar/nav_item.html' with route='radar:ai_settings' key='ai' icon='settings' label='AI 设置' %}
+    {% include 'radar/nav_item.html' with route='radar:capability' key='capability' icon='capability' label='业务能力设置' %}
+    </details>
+  </nav>
+  <div class="sidebar-bottom"><div class="local-indicator">{{ "本机工作空间"|ui:ui_lang }}</div><div class="worker-note {% if worker_alive %}online{% endif %}"><i></i>{% if worker_alive %}{{ "采集后台在线"|ui:ui_lang }}{% else %}{{ "采集后台未运行"|ui:ui_lang }}{% endif %}</div></div>
+</aside>
+<div class="app-shell">
+  <header class="topbar">
+    <button type="button" class="menu-toggle" data-menu-open="{{ "展开导航"|ui:ui_lang }}" data-menu-close="{{ "收起导航"|ui:ui_lang }}" aria-label="{{ "展开导航"|ui:ui_lang }}" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
+    <div class="topbar-title">{{ "营业开发"|ui:ui_lang }}<span>/</span><b>{% block breadcrumb %}{{ "工作概览"|ui:ui_lang }}{% endblock %}</b></div>
+    <div class="topbar-right"><a class="mode-label" href="{% url 'radar:ai_settings' %}"><span class="status-dot {% if model_enabled %}green{% endif %}"></span>{{ model_mode|ui:ui_lang }}</a><time>{{ today|date:"Y.m.d" }}</time>
+<form class="language-switch" method="post" action="{% url 'radar:language' %}">{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.get_full_path }}">
+<button name="language" value="zh" type="submit" aria-pressed="{% if ui_lang == 'ja' %}false{% else %}true{% endif %}">中文</button>
+<span aria-hidden="true">|</span>
+<button name="language" value="ja" type="submit" aria-pressed="{% if ui_lang == 'ja' %}true{% else %}false{% endif %}">日本語</button></form>
+<button type="button" class="theme-toggle" aria-pressed="false"
+  title="{{ "切换深色模式"|ui:ui_lang }}" aria-label="{{ "切换深色模式"|ui:ui_lang }}"
+  data-dark-label="{{ "切换深色模式"|ui:ui_lang }}" data-light-label="{{ "切换浅色模式"|ui:ui_lang }}"><span aria-hidden="true"></span></button></div>
+  </header>
+  <main id="main" class="main-content">
+    {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<div class="notice {{ message.tags }}" role="status">{{ message|ui:ui_lang }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+    <footer class="page-footer"><span>{{ "商机雷达"|ui:ui_lang }} / FALCON TRACK</span><span>{{ "业务时区 Asia/Shanghai"|ui:ui_lang }}</span></footer>
+  </main>
+</div>
+</body></html>

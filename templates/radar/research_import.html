@@ -1,0 +1,3 @@
+{% extends 'radar/base.html' %}{% block title %}{{ "导入授权材料"|ui:ui_lang }}{% endblock %}{% block breadcrumb %}{{ "企业经营研究"|ui:ui_lang }}{% endblock %}{% block content %}
+<h1>{{ "导入有权使用的 JBIC 公告材料"|ui:ui_lang }}</h1>
+<form method="post" enctype="multipart/form-data" class="panel"><div class="panel-body form-stack">{% csrf_token %}<label>{{ "JBIC 官方公告地址"|ui:ui_lang }}<input name="url" type="url" required></label><label>{{ "已取得的公告 HTML（最大 3 MB）"|ui:ui_lang }}<input name="material" type="file" accept=".html,.htm,text/html" required></label><label><input type="checkbox" name="rights" value="yes" required> {{ "我确认有权提供并保存此材料"|ui:ui_lang }}</label><button class="button primary">{{ "保存并解析"|ui:ui_lang }}</button></div></form>{% endblock %}

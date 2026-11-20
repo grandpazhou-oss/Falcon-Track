@@ -1,0 +1,12 @@
+{% load static %}<div class="sales-pool-grid">
+{% for pool in pools %}
+<section class="sales-pool {{ pool.key }}" id="{{ pool.key }}">
+  <div class="pool-header">
+    <span class="pool-icon"><svg aria-hidden="true"><use href="{% static 'radar/icons.svg' %}#{% if pool.key == 'establishment' %}factory{% elif pool.key == 'sme_entry' %}company{% else %}route{% endif %}"></use></svg></span>
+    <h3>{{ pool.label|ui:ui_lang }}</h3><span class="pool-count">{{ pool.count }} <small>{{ "条"|ui:ui_lang }}</small></span>
+  </div>
+  {% if preview_mode %}{% include 'radar/sales_pool_cards.html' with cards=pool.preview %}{% else %}{% include 'radar/sales_pool_cards.html' with cards=pool.cards %}{% endif %}
+  {% if preview_mode and pool.count > pool.preview|length %}<a class="pool-more" href="{% url 'radar:sales_pools' %}#{{ pool.key }}">{{ "查看本池全部"|ui:ui_lang }} {{ pool.count }} {{ "条 →"|ui:ui_lang }}</a>{% endif %}
+</section>
+{% endfor %}
+</div>

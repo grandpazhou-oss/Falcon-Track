@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+  <symbol id="radar" viewBox="0 0 24 24"><path d="M20 14a8 8 0 1 1-10-10M16 14a4 4 0 1 1-6-5M12 12l8-8"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="overview" viewBox="0 0 24 24"><path d="M3 4h7v9H3zm11 0h7v5h-7zM3 17h7v3H3zm11-4h7v7h-7z"/></symbol>
+  <symbol id="leads" viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12c6 3 12 3 18 0M10 13h4"/></symbol>
+  <symbol id="layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 5 9 5 9-5"/></symbol>
+  <symbol id="research" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6m-3-3v6"/></symbol>
+  <symbol id="company" viewBox="0 0 24 24"><path d="M4 21V5l10-2v18m0-12h6v12M2 21h20M7 8h3m-3 4h3m-3 4h3m7-3h1m-1 3h1"/></symbol>
+  <symbol id="sources" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></symbol>
+  <symbol id="history" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 7M3 4v6h6m3-3v5l4 2"/></symbol>
+  <symbol id="import" viewBox="0 0 24 24"><path d="M4 14v6h16v-6M12 3v12m-5-5 5 5 5-5"/></symbol>
+  <symbol id="analysis" viewBox="0 0 24 24"><path d="M4 20V4m0 16h16M8 16v-4m5 4V7m5 9v-6"/></symbol>
+  <symbol id="settings" viewBox="0 0 24 24"><path d="M3 7h8m5 0h5M3 17h3m5 0h10"/><circle cx="13.5" cy="7" r="2.5"/><circle cx="8.5" cy="17" r="2.5"/></symbol>
+  <symbol id="capability" viewBox="0 0 24 24"><path d="m12 3 8 4v6c0 4-4 7-8 9-4-2-8-5-8-9V7zM8 12l3 3 5-6"/></symbol>
+  <symbol id="factory" viewBox="0 0 24 24"><path d="M3 20V9l6 3V8l6 4V4h4l2 16zM6 16h2m3 0h2m3 0h2"/></symbol>
+  <symbol id="route" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+</svg>

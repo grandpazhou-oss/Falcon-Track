@@ -1,0 +1,66 @@
+{% brief_version run as version %}
+{% with brief=version.brief %}
+{% if version.can_toggle %}
+<nav class="brief-language">
+<a href="?brief=translated#project-analysis" {% if version.selected == 'translated' %}aria-current="true"{% endif %}>{% if version.target == 'ja' %}日本語訳{% else %}{{ "中文译文"|ui:ui_lang }}{% endif %}</a>
+<a href="?brief=original#project-analysis" {% if version.selected == 'original' %}aria-current="true"{% endif %}>{% if version.source == 'zh' %}{% if ui_lang == 'ja' %}原文（中国語）{% else %}{{ "原文（中文）"|ui:ui_lang }}{% endif %}{% else %}原文（日本語）{% endif %}</a>
+</nav>
+{% elif version.other_language %}
+{% if version.status == 'queued' or version.status == 'running' %}
+<p data-auto-refresh>{{ "正在翻译，完成后在这里查看。"|ui:ui_lang }}</p>
+{% elif version.status == 'failed' or version.status == 'cancelled' %}
+<p>{{ "翻译未完成，可在分析记录里重试。"|ui:ui_lang }}</p>
+{% else %}
+<form method="post" action="{{ version.action }}">{% csrf_token %}<button type="submit" class="button secondary" name="target" value="{{ version.target }}">{% if version.target == 'ja' %}Flash で日本語に翻訳{% else %}{{ "Flash 转为中文"|ui:ui_lang }}{% endif %}</button></form>
+{% endif %}{% endif %}
+<div class="pro-brief">
+  <section class="brief-section brief-executive">
+    <h3>{{ "30 秒高管速览"|ui:ui_lang }}</h3>
+    {% if brief.executive_brief.headline %}<p class="brief-headline">{{ brief.executive_brief.headline }}</p>{% endif %}
+    {% if brief.executive_brief.window_judgment %}<p><strong>{{ "切入窗口"|ui:ui_lang }}</strong> {{ brief.executive_brief.window_judgment }}</p>{% endif %}
+    {% if brief.executive_brief.opportunity_summary %}<p><strong>{{ "优先机会"|ui:ui_lang }}</strong> {{ brief.executive_brief.opportunity_summary }}</p>{% endif %}
+    <p class="quiet-note">{{ "窗口研判与营业建议 · 行业推演，待核实"|ui:ui_lang }}</p>
+  </section>
+  {% if brief.logistics_opportunities %}
+  <section class="brief-section">
+    <h3>{{ "可切入物流业务线"|ui:ui_lang }}</h3>
+    <div class="brief-lines">{% for line in brief.logistics_opportunities %}
+      <article><h4>{{ line.line_name }}</h4><p class="quiet-note">{{ line.timing_tag }} · {{ line.basis_label|ui:ui_lang }}</p><p>{{ line.detail }}</p></article>
+    {% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if brief.entry_strategy.target_roles or brief.entry_strategy.pitch_angle or brief.entry_strategy.pitfall_warning %}
+  <section class="brief-section">
+    <h3>{{ "敲门策略与防踩坑"|ui:ui_lang }}</h3>
+    <dl>{% if brief.entry_strategy.target_roles %}<dt>{{ "优先联系"|ui:ui_lang }}</dt><dd>{{ brief.entry_strategy.target_roles|join:"、" }}</dd>{% endif %}
+    {% if brief.entry_strategy.pitch_angle %}<dt>{{ "约见切入点"|ui:ui_lang }}</dt><dd>{{ brief.entry_strategy.pitch_angle }}</dd>{% endif %}
+    {% if brief.entry_strategy.pitfall_warning %}<dt>{{ "防踩坑"|ui:ui_lang }}</dt><dd>{{ brief.entry_strategy.pitfall_warning }}</dd>{% endif %}</dl>
+  </section>
+  {% endif %}
+  {% if brief.discovery_questions %}
+  <section class="brief-section" data-brief-copy>
+    <div class="brief-heading"><h3>{% if brief.discovery_questions|length == 3 %}{{ "3 个核心追问"|ui:ui_lang }}{% else %}{{ "核心追问"|ui:ui_lang }}{% endif %}</h3>
+      <button type="button" class="button secondary" data-copy-trigger data-copy-ok="{{ "已复制 ✓"|ui:ui_lang }}" data-copy-error="{{ "复制失败，请手动选择"|ui:ui_lang }}" aria-live="polite">{{ "复制问题"|ui:ui_lang }}</button></div>
+    <ol>{% for question in brief.discovery_questions %}<li data-copy-line>{{ forloop.counter }}. {{ question }}</li>{% endfor %}</ol>
+  </section>
+  {% endif %}
+  {% if brief.outreach_kit.email_body_ja or brief.outreach_kit.call_script_zh or brief.outreach_kit.objection_reply_zh %}
+  <section class="brief-section">
+    <h3>{{ "日文开发信与中文电话开场白"|ui:ui_lang }}</h3>
+    <p class="quiet-note">{{ "联系草稿 · 发送前确认称呼、项目进度和我方能力"|ui:ui_lang }}</p>
+    {% if brief.outreach_kit.email_body_ja and brief.outreach_kit.email_subject_ja %}
+    <div class="brief-outreach" data-brief-copy>
+      <div class="brief-heading"><h4>{{ "日文开发信"|ui:ui_lang }}</h4><button type="button" class="button secondary" data-copy-trigger data-copy-ok="{{ "已复制 ✓"|ui:ui_lang }}" data-copy-error="{{ "复制失败，请手动选择"|ui:ui_lang }}" aria-live="polite">{{ "复制主题和正文"|ui:ui_lang }}</button></div>
+      <p lang="{% if version.selected == 'translated' and version.shown_lang == 'zh' %}zh-CN{% else %}ja{% endif %}" data-copy-line>{{ "件名："|ui:ui_lang }}{{ brief.outreach_kit.email_subject_ja }}</p>
+      <div class="brief-letter" lang="{% if version.selected == 'translated' and version.shown_lang == 'zh' %}zh-CN{% else %}ja{% endif %}" data-copy-line>{{ brief.outreach_kit.email_body_ja }}</div>
+    </div>{% endif %}
+    {% if brief.outreach_kit.call_script_zh %}
+    <div class="brief-outreach" data-brief-copy>
+      <div class="brief-heading"><h4>{{ "中文电话开场白"|ui:ui_lang }}</h4><button type="button" class="button secondary" data-copy-trigger data-copy-ok="{{ "已复制 ✓"|ui:ui_lang }}" data-copy-error="{{ "复制失败，请手动选择"|ui:ui_lang }}" aria-live="polite">{{ "复制开场白"|ui:ui_lang }}</button></div>
+      <p data-copy-line>{{ brief.outreach_kit.call_script_zh }}</p>
+    </div>{% endif %}
+    {% if brief.outreach_kit.objection_reply_zh %}<h4>{{ "对方已有固定物流商时"|ui:ui_lang }}</h4><p>{{ brief.outreach_kit.objection_reply_zh }}</p>{% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endwith %}

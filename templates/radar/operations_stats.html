@@ -1,0 +1,33 @@
+<section class="settings-operations">
+<div class="page-heading"><h2>{{ "使用与运行统计"|ui:ui_lang }}</h2><a href="?range={{ stats.scope }}&format=json" class="button secondary">{{ "导出统计 JSON"|ui:ui_lang }}</a></div>
+<section class="panel"><div class="panel-body">
+<h3>{{ "Flash / Pro Token 用量"|ui:ui_lang }}</h3>
+<nav class="stats-range">{% for key,title in stats.ranges.items %}<a href="?range={{ key }}" {% if stats.scope == key %}aria-current="true"{% endif %}>{{ title|ui:ui_lang }}</a>{% endfor %}</nav>
+<div class="table-wrap"><table class="stats-table"><thead><tr><th>{{ "档位"|ui:ui_lang }}</th><th>{{ "调用次数"|ui:ui_lang }}</th><th>{{ "输入 Token"|ui:ui_lang }}</th><th>{{ "缓存命中 Token"|ui:ui_lang }}</th><th>{{ "缓存命中率"|ui:ui_lang }}</th><th>{{ "输出 Token"|ui:ui_lang }}</th><th>{{ "总 Token"|ui:ui_lang }}</th></tr></thead><tbody>
+{% for row in stats.tokens %}<tr><th>{{ row.name }}</th><td>{{ row.count }}</td><td>{{ row.prompt_tokens }}</td><td>{{ row.cached_tokens }}</td><td>{% if row.cache_rate != None %}{{ row.cache_rate }}%{% else %}—{% endif %}</td><td>{{ row.completion_tokens }}</td><td>{{ row.total_tokens }}</td></tr>{% endfor %}
+</tbody></table></div></div></section>
+<section class="panel"><div class="panel-body"><h3>{{ "联网搜索用量与状态"|ui:ui_lang }}</h3>
+<p>{% if stats.search.enabled %}{{ "已启用"|ui:ui_lang }}{% else %}{{ "未启用"|ui:ui_lang }}{% endif %} {{ "· 今日"|ui:ui_lang }} {{ stats.search.today }} / {{ stats.search.daily_limit }}</p>
+<div class="table-wrap"><table class="stats-table"><thead><tr><th>{{ "时间范围"|ui:ui_lang }}</th><th>{{ "调用次数"|ui:ui_lang }}</th><th>{{ "成功率"|ui:ui_lang }}</th></tr></thead>
+<tbody><tr><th>{{ "本月"|ui:ui_lang }}</th><td>{{ stats.search.month }}</td><td>{% if stats.search.monthly_rate != None %}{{ stats.search.monthly_rate }}%{% else %}—{% endif %}</td></tr>
+<tr><th>{{ "累计"|ui:ui_lang }}</th><td>{{ stats.search.total }}</td><td>{% if stats.search.overall_rate != None %}{{ stats.search.overall_rate }}%{% else %}—{% endif %}</td></tr></tbody></table></div>
+<p>{{ "最近失败原因："|ui:ui_lang }}{% if stats.search.last_failure %}{{ stats.search.last_failure|ui:ui_lang }} · {{ stats.search.last_failure_at|date:"Y-m-d H:i" }}{% else %}{{ "暂无失败记录"|ui:ui_lang }}{% endif %}</p>
+</div></section>
+<section class="panel"><div class="panel-body"><h3>{{ "来源产出与有效率"|ui:ui_lang }}</h3>
+<p class="quiet-note">{{ "有效率按现有 A/B 级线索数除以累计抓取数计算；未记录抓取量的来源按留存线索计。"|ui:ui_lang }}</p>
+<div class="table-wrap"><table class="stats-table stats-source-table"><thead><tr><th>{{ "信息来源"|ui:ui_lang }}</th><th>{{ "累计抓取"|ui:ui_lang }}</th><th>{{ "A/B 级"|ui:ui_lang }}</th><th>{{ "接受跟进"|ui:ui_lang }}</th><th>{{ "有效率"|ui:ui_lang }}</th><th>{{ "近期异常"|ui:ui_lang }}</th></tr></thead>
+<tbody>{% for row in stats.sources %}<tr><th>{{ row.name|ui:ui_lang }}</th><td>{{ row.seen }}</td><td>{{ row.ab }}</td><td>{{ row.useful }}</td><td>{% if row.effective != None %}{{ row.effective }}%{% else %}—{% endif %}</td>
+<td>{% for alert in row.alerts %}<span class="stats-alert">{{ alert|ui:ui_lang }}</span>{% empty %}—{% endfor %}</td></tr>{% empty %}<tr><td colspan="6">{{ "暂无来源记录"|ui:ui_lang }}</td></tr>{% endfor %}</tbody></table></div>
+</div></section>
+<section class="panel"><div class="panel-body"><h3>{{ "重点区域与行业"|ui:ui_lang }}</h3><div class="stats-pair">
+<div><h4>{{ "区域分布（A/B 级）"|ui:ui_lang }}</h4>{% include 'radar/stat_share.html' with rows=stats.regions %}</div>
+<div><h4>{{ "行业分布（A/B 级）"|ui:ui_lang }}</h4>{% include 'radar/stat_share.html' with rows=stats.industries %}</div>
+</div></div></section>
+<section class="panel"><div class="panel-body"><h3>{{ "营业反馈与本地存储"|ui:ui_lang }}</h3>
+<div class="stats-pair"><div><h4>{{ "跟进状态（A/B 级）"|ui:ui_lang }}</h4><dl class="stats-counts">{% for row in stats.feedback %}<dt>{{ row.name|ui:ui_lang }}</dt><dd>{{ row.count }}</dd>{% endfor %}</dl></div>
+<div><h4>{{ "忽略原因前 3 位"|ui:ui_lang }}</h4><dl class="stats-counts">{% for row in stats.reasons %}<dt>{{ row.name|ui:ui_lang }}</dt><dd>{{ row.count }}</dd>{% empty %}<dd>{{ "暂无忽略记录"|ui:ui_lang }}</dd>{% endfor %}</dl></div></div>
+<div class="table-wrap"><table class="stats-table"><thead><tr><th>{{ "本地文件"|ui:ui_lang }}</th><th>{{ "数量"|ui:ui_lang }}</th><th>{{ "占用空间"|ui:ui_lang }}</th></tr></thead>
+<tbody><tr><th>{{ "SQLite 数据库"|ui:ui_lang }}</th><td>{{ stats.storage.database.count }}</td><td>{{ stats.storage.database.bytes|filesizeformat }}</td></tr>
+<tr><th>{{ "PDF / HTML 原件"|ui:ui_lang }}</th><td>{{ stats.storage.archive.count }}</td><td>{{ stats.storage.archive.bytes|filesizeformat }}</td></tr></tbody></table></div>
+</div></section>
+</section>

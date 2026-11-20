@@ -1,0 +1,16 @@
+{% extends 'radar/base.html' %}{% block title %}{{ "AI 设置"|ui:ui_lang }}{% endblock %}{% block breadcrumb %}{{ "AI 设置"|ui:ui_lang }}{% endblock %}{% block content %}
+<div class="page-heading"><h1>{{ "AI 设置"|ui:ui_lang }}</h1></div>
+<section class="panel"><form method="post" class="panel-body form-stack">{% csrf_token %}{{ form.non_field_errors }}
+<p>{{ "Flash 快筛与翻译 · Pro 深度分析"|ui:ui_lang }}</p>
+<p>{{ "AI 连接："|ui:ui_lang }}{% if cfg.test_status == 'callable' %}{{ "可用"|ui:ui_lang }}{% elif cfg.test_status == 'untested' %}{{ "尚未测试"|ui:ui_lang }}{% else %}{{ "需检查"|ui:ui_lang }}{% endif %}
+{{ "· 模型密钥："|ui:ui_lang }}{% if key_present %}{{ "已配置"|ui:ui_lang }}{% else %}{{ "未配置"|ui:ui_lang }}{% endif %} {{ "· 搜索密钥："|ui:ui_lang }}{% if search_key_present %}{{ "已配置"|ui:ui_lang }}{% else %}{{ "未配置"|ui:ui_lang }}{% endif %}</p>
+{% for field in form %}{% if field.name == 'enabled' or field.name == 'auto_new' or field.name == 'search_enabled' %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label|ui:ui_lang }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
+<details class="advanced-settings"{% if form.errors %} open{% endif %}><summary>{{ "高级连接配置"|ui:ui_lang }}</summary>
+{% for field in form %}{% if field.name != 'enabled' and field.name != 'auto_new' and field.name != 'search_enabled' %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label|ui:ui_lang }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
+<p>{{ "密钥存入系统凭据库，也可通过环境变量提供。"|ui:ui_lang }}</p>
+</details>
+<button class="button primary">{{ "保存设置"|ui:ui_lang }}</button></form></section>
+<section class="panel"><form method="post" action="{% url 'radar:batch_analysis' %}" class="panel-body">{% csrf_token %}<input type="hidden" name="request_key" value="{{ request_key }}"><input type="hidden" name="task_type" value="test"><input type="hidden" name="force" value="true"><button class="button secondary">{{ "测试连接"|ui:ui_lang }}</button></form></section>
+{% include 'radar/operations_stats.html' %}
+<p class="quiet-note">{{ "仅使用有权访问的公开资料与本地材料；对外联络由营业人员确认和发送。"|ui:ui_lang }}</p>
+{% endblock %}

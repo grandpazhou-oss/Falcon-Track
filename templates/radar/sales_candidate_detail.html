@@ -1,0 +1,39 @@
+{% extends 'radar/base.html' %}
+{% block title %}{{ card.title|ui:ui_lang }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ card.title|ui:ui_lang }}</h1><p>{{ card.company_name|default:"企业待核实"|ui:ui_lang }} · {{ card.grade }} {{ "级"|ui:ui_lang }}</p></div></div>
+{% url 'radar:analyze_candidate' candidate.pk as project_action %}
+<a href="{% url 'radar:sales_pools' %}?grade={{ card.grade }}">{{ "← 返回商机池"|ui:ui_lang }}</a>
+<div class="sales-detail-grid"><div>
+<section class="panel"><div class="panel-body">
+<h2>{{ "下一步问什么"|ui:ui_lang }}</h2><p>{{ card.question|default:"这项动作的落地时间和实际货流是什么，物流由哪一方负责？"|ui:ui_lang }}</p>
+<h2>{{ "原件证据"|ui:ui_lang }}</h2>
+{% if card.ui_source %}<p>{{ card.ui_source|ui:ui_lang }}</p>{% endif %}
+{% if candidate.result.award_publish_date %}<p>{{ "补贴采择公布日"|ui:ui_lang }} {{ candidate.result.award_publish_date }} {{ "· 项目执行时间待核实"|ui:ui_lang }}</p>{% endif %}
+{% if candidate.result.finance_purpose %}
+<dl><dt>{{ "融资用途"|ui:ui_lang }}</dt><dd>{{ candidate.result.finance_purpose }}</dd>
+<dt>{{ "中国法人"|ui:ui_lang }}</dt><dd>{{ candidate.result.china_entity|default:"待核实"|ui:ui_lang }}</dd>
+<dt>{{ "日本母公司员工数"|ui:ui_lang }}</dt><dd>{{ candidate.result.employees|default:"待核实"|ui:ui_lang }}</dd>
+<dt>{{ "公告发布日"|ui:ui_lang }}</dt><dd>{{ card.published_at|default:"待核实"|ui:ui_lang }}</dd>
+<dt>{{ "融资合同签订日"|ui:ui_lang }}</dt><dd>{{ candidate.result.contract_date|default:"原文未披露"|ui:ui_lang }}</dd></dl>
+{% endif %}
+{% include "radar/promotion_basis.html" with basis=card.promotion_basis %}
+{% if candidate.result.pdf_page %}<p><a href="{{ candidate.result.source_url|default:card.source_url }}#page={{ candidate.result.pdf_page }}" rel="noopener noreferrer">{{ "查看原始 PDF 第"|ui:ui_lang }} {{ candidate.result.pdf_page }} {{ "页"|ui:ui_lang }}</a></p>{% endif %}
+<p><a href="{{ card.source_url }}" rel="noopener noreferrer">{{ "查看线索原文"|ui:ui_lang }}</a></p>
+<blockquote>{{ card.evidence_quote }}</blockquote>
+{% if candidate.result.verification.sources %}<ul>
+{% for source in candidate.result.verification.sources %}{% if source.project_original %}
+<li><a href="{{ source.url }}{% if source.page %}#page={{ source.page }}{% endif %}" rel="noopener noreferrer">{{ source.label|ui:ui_lang }}{% if source.page %} {{ "· 原 PDF 第"|ui:ui_lang }} {{ source.page }} {{ "页"|ui:ui_lang }}{% endif %}</a></li>
+{% endif %}{% endfor %}
+</ul>{% endif %}
+
+<p>{% for item in card.pending %}{{ item|ui:ui_lang }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+</div></section>
+{% include 'radar/project_analysis_panel.html' %}
+<details class="panel"><summary>{{ "完整已存正文"|ui:ui_lang }}</summary><div class="panel-body">{{ candidate.text|linebreaks }}</div></details>
+</div><aside>
+{% include 'radar/company_dossier.html' %}
+{% if feedback_card %}<section class="panel"><div class="panel-body">{% include 'radar/sales_feedback.html' %}</div></section>{% endif %}
+{% include 'radar/tier_actions.html' %}
+</aside></div>
+{% endblock %}

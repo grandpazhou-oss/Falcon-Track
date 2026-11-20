@@ -1,0 +1,1 @@
+{% if run.provider_model|tier %}<p class="quiet-note">{{ run.provider_model|tier }}{% if run.result.active_seconds %} · {{ run.result.active_seconds|floatformat:1 }} s{% endif %}</p>{% endif %}

@@ -1,0 +1,11 @@
+<section class="panel"><div class="panel-body">
+<h2>{{ "手动 AI 分析"|ui:ui_lang }}</h2>
+<form method="post" action="{{ project_action }}" class="sales-actions tier-actions">{% csrf_token %}
+<input type="hidden" name="request_key" value="{{ request_key }}"><input type="hidden" name="task_type" value="analysis">
+{% if candidate %}<button class="button secondary" name="tier" value="flash">{{ "Flash 快筛"|ui:ui_lang }}</button>{% endif %}
+{% if feedback_card %}<div class="pro-action"><button class="button primary" name="tier" value="pro" aria-describedby="pro-time-hint">{{ "Pro 深度分析"|ui:ui_lang }}</button>
+<p class="pro-time-hint" id="pro-time-hint">{{ "深度分析约需 2–5 分钟，提交后可继续浏览其他页面"|ui:ui_lang }}</p></div>{% endif %}
+<button class="button secondary">{{ "项目概览"|ui:ui_lang }}</button>
+</form>
+
+</div></section>

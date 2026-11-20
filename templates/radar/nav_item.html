@@ -1,0 +1,1 @@
+{% load static %}<a href="{% url route %}"{% if active_nav == key %} class="active" aria-current="page"{% endif %}><svg aria-hidden="true"><use href="{% static 'radar/icons.svg' %}#{{ icon }}"></use></svg>{{ label|ui:ui_lang }}</a>

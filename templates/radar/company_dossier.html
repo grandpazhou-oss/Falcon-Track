@@ -1,0 +1,9 @@
+<section class="panel"><div class="panel-body">
+<h2>{{ "公司档案"|ui:ui_lang }}</h2>
+{% include 'radar/company_fields.html' %}
+<dl>
+<dt>{{ "规模"|ui:ui_lang }}</dt><dd>{{ card.ui_size|default:"规模待核"|ui:ui_lang }}{% if card.company_scale.employees %} · {{ card.company_scale.employees }}{% endif %}{% if card.company_scale.revenue %} · {{ card.company_scale.revenue }}{% endif %}</dd>
+<dt>{{ "总部"|ui:ui_lang }}</dt><dd>{{ card.company_headquarters|default:"待核实"|ui:ui_lang }}</dd>
+<dt>{{ "中国落点"|ui:ui_lang }}</dt><dd>{{ card.china_location|default:"待核实"|ui:ui_lang }}</dd>
+</dl>
+</div></section>

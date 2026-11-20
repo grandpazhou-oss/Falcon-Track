@@ -1,0 +1,12 @@
+<section class="panel" id="project-analysis"><div class="panel-body">
+<h2>{{ "项目简报"|ui:ui_lang }}</h2>
+
+{% for run in project_runs %}<details{% if forloop.first %} open{% endif %}>
+<summary>{{ "分析 #"|ui:ui_lang }}{{ run.pk }} · {{ run.get_status_display|ui:ui_lang }} · {{ run.error_label|ui:ui_lang }}</summary>
+{% if run.stale %}<p class="notice warning">{{ "分析输入已有更新，请重新分析后再使用。"|ui:ui_lang }}</p>{% endif %}
+{% include 'radar/analysis_usage.html' %}{% if run.result.prescreen %}
+<p><b>{{ "Flash 初筛"|ui:ui_lang }}</b> · {% if run.result.prescreen.is_china_mainland_logistics_relevant %}{{ "相关"|ui:ui_lang }}{% else %}{{ "未在截取摘要中找到相关证据"|ui:ui_lang }}{% endif %} · {{ run.result.prescreen.one_line_reason }}</p>
+{% else %}{% include 'radar/analysis_result.html' %}{% endif %}
+</details>{% endfor %}
+<a href="{% url 'radar:analyses' %}">{{ "查看分析记录"|ui:ui_lang }}</a>
+</div></section>

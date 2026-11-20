@@ -1,0 +1,6 @@
+{% if run.result.validation_errors %}
+<div class="notice warning">{{ "模型已返回，但以下条目需要复核。"|ui:ui_lang }}{% if run.result.display_retrospective %}{{ "查看时新发现的条目已隔离，原始任务和结果未修改；其他建议仍需复核。"|ui:ui_lang }}{% elif run.status == 'needs_review' %}{{ "未通过的条目已隔离，其他通过校验的内容保留供复核。"|ui:ui_lang }}{% else %}{{ "本次内容未作为分析事实采用。"|ui:ui_lang }}{% endif %}</div>
+{% for item in run.result.validation_errors %}<details><summary>{{ item.field }}：{{ item.reason|ui:ui_lang }}</summary><p>{{ "模型字段值："|ui:ui_lang }}{{ item.value }}</p><p>{{ "模型引用（待核对）："|ui:ui_lang }}</p><blockquote>{{ item.quote }}</blockquote><p>{{ "对应原文："|ui:ui_lang }}</p><blockquote>{{ item.source_text|default:"无此证据块"|ui:ui_lang }}</blockquote></details>{% endfor %}
+{% elif run.error_code == 'unsupported_fact' %}
+<p class="notice warning">{{ "此历史任务未保存逐项核对明细，结果未采用；已发生的模型调用和用量仍保留。"|ui:ui_lang }}</p>
+{% endif %}

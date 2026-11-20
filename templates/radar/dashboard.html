@@ -1,0 +1,22 @@
+{% extends 'radar/base.html' %}
+{% block title %}{{ "营业首页"|ui:ui_lang }}{% endblock %}
+{% block breadcrumb %}{{ "营业首页"|ui:ui_lang }}{% endblock %}
+{% block content %}
+<header class="work-heading"><h1>{{ "营业首页"|ui:ui_lang }}</h1><p>{{ "优先核对高确信的日本企业在华经营线索。"|ui:ui_lang }}</p></header>
+<div class="sales-kpis">
+<a href="{% url 'radar:sales_pools' %}?grade=A"><span>{{ "A 级高确信"|ui:ui_lang }}</span><strong>{{ grade_a }}</strong></a>
+<a href="{% url 'radar:sales_pools' %}?grade=B"><span>{{ "B 级高潜待核"|ui:ui_lang }}</span><strong>{{ grade_b }}</strong></a>
+<a href="{% url 'radar:sales_pools' %}?grade=AB&amp;feedback=new"><span>{{ "待营业反馈"|ui:ui_lang }}</span><strong>{{ feedback_counts.new }}</strong></a>
+<a href="{% url 'radar:sales_pools' %}?grade=AB&amp;feedback=accepted"><span>{{ "已接受跟进"|ui:ui_lang }}</span><strong>{{ feedback_counts.accepted }}</strong></a>
+</div>
+<header class="work-section"><div><h2>{{ "A 级优先商机"|ui:ui_lang }}</h2><p>{{ "物流外包需求未确认"|ui:ui_lang }}</p></div><a class="button primary" href="{% url 'radar:sales_pools' %}?grade=B">{{ "查看全部 B 级待核 →"|ui:ui_lang }}</a></header>
+<div class="sales-priority">
+{% for card in priority_cards %}
+<article class="sales-card">
+<h3><a href="{{ card.detail_url|default:card.source_url }}">{{ card.ui_title|ui:ui_lang }}</a></h3>
+<p class="sales-meta">{{ card.company_industry|default:"行业待核"|ui:ui_lang }} · {{ card.china_location|default:"地点待核"|ui:ui_lang }} · {{ card.target_period|default:"目标期待核"|ui:ui_lang }}</p>
+<p class="sales-question"><b>{{ "下一步问"|ui:ui_lang }}</b> {{ card.question|default:"这项动作何时落地，物流由谁负责？"|ui:ui_lang }}</p>
+{% if card.official_website_status == 'verified' and card.official_website %}<a href="{{ card.official_website }}" target="_blank" rel="noopener noreferrer">{{ "公司官网 ↗"|ui:ui_lang }}</a>{% else %}<span class="sales-meta">{{ "官网待核"|ui:ui_lang }}</span>{% endif %}
+</article>{% empty %}<p>{{ "目前没有 A 级商机。"|ui:ui_lang }}</p>{% endfor %}
+</div>
+{% endblock %}
