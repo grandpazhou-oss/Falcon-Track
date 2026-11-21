@@ -28,14 +28,17 @@ SECTION = re.compile(r'設備の新設[、，・,]?除却等の計画|関係会�
 
 def api_key():
     key = os.environ.get('EDINET_API_KEY')
-    if key:
-        return key
-    from radar.ai_config import SERVICE, secure_keyring
-    from keyring.errors import KeyringError
-    try:
-        return secure_keyring().get_password(SERVICE,'edinet-api-v2') or ''
-    except (KeyringError,ValueError,OSError):
-        return ''
+    if not key:
+        from radar.ai_config import SERVICE, secure_keyring
+        from keyring.errors import KeyringError
+        try:
+            key = secure_keyring().get_password(SERVICE,'edinet-api-v2')
+        except (KeyringError,ValueError,OSError):
+            return ''
+    key = (key or '').strip()
+    if any(c.isspace() or not c.isprintable() for c in key):
+        raise ValueError('edinet_invalid_api_key_format')
+    return key
 
 
 def request(url, key, limit):

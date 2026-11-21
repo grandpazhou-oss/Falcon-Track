@@ -55,6 +55,8 @@ Windows PowerShell 可在项目目录直接运行：
 .venv/bin/python -m keyring set logistics-lead-radar-v02 edinet-api-v2
 ```
 
+出现 `Password:` 时，只粘贴金融厅页面显示的 API Key，按回车。终端不显示输入。已有同名条目可用同一命令更新。误粘贴带空格的终端命令时，报告提示 `skipped_invalid_api_key`，网页入口仍继续运行。
+
 Windows 用 `.\.venv\Scripts\python.exe` 替换解释器。也可由启动器注入进程环境变量 `EDINET_API_KEY`。避免写进项目的 .env、配置文件或命令行参数。没有凭据时每个 L2 入口都会记录 `skipped_missing_api_key` 并继续其他档位。客户端只向固定金融厅 TLS 主机发送带密钥的业务请求，对外账本仅保留无凭据的 URL 与 HTTP 状态；API 响应错误正文不会进入日志。文档的 `url` 是不带认证参数的接口位置，回查本地原件不需要密钥。[金融厅 API 规格](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0110.html) · [CSV 有无标志说明](https://disclosure2dl.edinet-fsa.go.jp/guide/static/disclosure/WZEK0090_001.html)
 
 L2 的 `source_type` 为 `edinet_api_v2`。自定义 r2 配置中的旧值 `edinet` 需要改名。仅对金融厅官方 HTTPS 主机的认证清单及文书端点使用专用 API 通道，省略网页 robots 预检。请求间隔至少 1.2 秒，拒绝重定向；HTTP 状态或 JSON 错误体报告 401、429 时停止本批 EDINET 读取。出处随报告和事件证据保存为「出典：EDINET（金融庁）」。

@@ -160,11 +160,20 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                         stats['budget_skips' if str(exc)=='total_request_limit' else 'failures']+=1
 
             blocked_scopes=set()
-            key=edinet.api_key() if statutory else ''
+            key_error=''
+            try:
+                key=edinet.api_key() if statutory else ''
+            except ValueError as exc:
+                key=''
+                key_error=str(exc)
             if statutory and not key:
+                status='skipped_invalid_api_key' if key_error else 'skipped_missing_api_key'
                 for scope in statutory:
-                    sources[scope][3]['status']='skipped_missing_api_key'
-                stats['skipped_missing_api_key']=len(statutory)
+                    row=sources[scope][3]
+                    row['status']=status
+                    if key_error:
+                        row['reason']=key_error
+                stats[status]=len(statutory)
             elif statutory:
                 codes={code for scope in statutory for code in (sources[scope][0]['edinet_code'],sources[scope][0]['parent_edinet_code']) if code}
                 stats['attempted_sources']+=len(statutory)
@@ -204,7 +213,7 @@ def run(companies, output, *, limit, details=3, references=False, configured=Non
                             break
 
             for scope,(c,e,s,row) in sources.items():
-                if row['status'] in ('failed','skipped_missing_api_key') or e['compliance_mode'] not in ('full_archive','statutory_api'):
+                if row['status'] in ('failed','skipped_missing_api_key','skipped_invalid_api_key') or e['compliance_mode'] not in ('full_archive','statutory_api'):
                     continue
                 queue.extend((item['score'],scope,hashed,item) for hashed,item in s['pending'].items())
             used=Counter()

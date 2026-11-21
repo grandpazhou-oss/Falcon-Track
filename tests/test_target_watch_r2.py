@@ -408,3 +408,26 @@ def test_utf8_bom_business_error():
 def test_zip_text_encodings(encoding):
     blocks=edinet.csv_blocks(csv_zip([['x','関係会社の状況',QUOTE]],encoding),'120')
     assert blocks==[('XBRL_TO_CSV/jpcrp-test.csv row 2',QUOTE)]
+
+
+def test_reject_command_saved_as_edinet_key(tmp_path,monkeypatch):
+    from radar import ai_config
+
+    stored='python -m keyring set test-service edinet-api-v2'
+    class Keychain:
+        def get_password(self, service, account):
+            assert account=='edinet-api-v2'
+            return stored
+
+    monkeypatch.delenv('EDINET_API_KEY',raising=False)
+    monkeypatch.setattr(ai_config,'secure_keyring',lambda:Keychain())
+    monkeypatch.setattr(edinet,'request',lambda *a:pytest.fail('invalid key must stay local'))
+    monkeypatch.setattr(batch,'fetch',lambda url,**k:response(url,'<a href="d">上海新工場</a>'))
+    c=company(mode='statutory_api',kind='edinet_api_v2')
+    result=batch.run([c,company(1,'metadata_pointer')],tmp_path,limit=4)
+    assert result['stats']['skipped_invalid_api_key']==1
+    assert result['entries'][0]['reason']=='edinet_invalid_api_key_format'
+    assert result['stats']['pointer_only']==1
+    assert stored not in json.dumps(result)
+    monkeypatch.setenv('EDINET_API_KEY','  '+KEY+'\n')
+    assert edinet.api_key()==KEY
